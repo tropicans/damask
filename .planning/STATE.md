@@ -1,20 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.0
-milestone_name: secured the app
-status: Awaiting next milestone
-stopped_at: Phase 7 context gathered
-last_updated: "2026-07-19T07:39:18.543Z"
+milestone: v4.0
+milestone_name: data reversion
+status: planning
+last_updated: "2026-07-19T08:02:09.144Z"
 last_activity: 2026-07-19
-last_activity_desc: Milestone v3.0 completed and archived
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
-  percent: 100
-current_phase: 8
-current_phase_name: Input Hardening & Role Authorization
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -28,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-07-19)
 
 ## Current Position
 
-Phase: Milestone v3.0 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-07-19 — Milestone v3.0 completed and archived
+Status: Defining requirements
+Last activity: 2026-07-19 — Milestone v4.0 started
 
 ## Performance Metrics
 

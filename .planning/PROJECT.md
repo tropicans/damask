@@ -41,7 +41,12 @@ Ensure sensitive data is masked safely and efficiently before it leaves the orga
 
 ### Active
 
-- [ ] Planning next milestone requirements (TBD)
+- [ ] REV-01: Bijective 1-to-1 mapping generation during masking
+- [ ] REV-02: Downloadable reversion mapping file (JSON) alongside masked data
+- [ ] REV-03: Revert data UI page for uploading masked file + JSON mapping file
+- [ ] REV-04: Revert file parsing & reconstruction in-memory
+- [ ] REV-05: Revert audit log tracking (metadata only, no PII)
+- [ ] REV-06: Robust error handling for invalid/corrupted files or mismatched mappings
 
 ### Out of Scope
 
@@ -70,9 +75,15 @@ The application is built to run locally or as an internal web tool using a React
 | Chunked Upload Hardening | Inspecting file uploads in 8KB chunks ensures payloads >50MB are rejected before loading fully | — Approved & Implemented (v3.0) |
 | Role-based RBAC Dashboard | Restricting audit metrics to admin/auditor roles enforces least-privilege security policy | — Approved & Implemented (v3.0) |
 
-## Next Milestone: v4.0 (Planning)
+## Current Milestone: v4.0 (Data Reversion)
 
-**Goal:** Define and plan next major release features (e.g., custom regex additions, bulk file processing, database connectors, or admin role promotion UI).
+**Goal:** Create a facility to revert masked data back to its original/real values in a secure, zero-knowledge, and stateless manner.
+
+**Target features:**
+- Reversion mapping generation during data masking (bijective 1-to-1 mapping per column)
+- Downloadable reversion mapping key file (JSON format) alongside the masked file
+- Reversion upload interface (upload masked file + JSON mapping file to download restored file in-memory)
+- Revert job audit logging (file size, row count, metadata only)
 
 ---
-*Last updated: 2026-07-19 after v3.0 milestone*
+*Last updated: 2026-07-19 after v4.0 start*
