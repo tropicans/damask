@@ -27,17 +27,27 @@ def client_fixture(session: Session):
     yield client
     app.dependency_overrides.clear()
 
-def test_invalid_mime_type(client: TestClient):
-    register_resp = client.post(
-        "/api/auth/register",
+def test_invalid_mime_type(client: TestClient, session: Session):
+    from app.models.user import User
+    from app.services.auth import hash_password
+    user = User(
+        username="testuser",
+        email="test@securedata.com",
+        password_hash=hash_password("strongpassword123"),
+        role="user"
+    )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    login_resp = client.post(
+        "/api/auth/login",
         json={
-            "username": "testuser",
             "email": "test@securedata.com",
             "password": "strongpassword123"
         }
     )
-    assert register_resp.status_code == 201
-    token = register_resp.cookies.get("secure_data_session")
+    token = login_resp.cookies.get("secure_data_session")
     client.cookies.clear()
     headers = {"Authorization": f"Bearer {token}"}
     
@@ -50,7 +60,7 @@ def test_invalid_mime_type(client: TestClient):
     assert response.status_code == 400
     assert "Tipe MIME file tidak valid" in response.json()["detail"]
 
-def test_file_too_large(client: TestClient):
+def test_file_too_large(client: TestClient, session: Session):
     # Override size constraint temporarily for the test to avoid creating a real 50MB payload
     from app.api.endpoints import preview, mask
     old_preview_max = preview.MAX_FILE_SIZE_BYTES
@@ -60,16 +70,26 @@ def test_file_too_large(client: TestClient):
     mask.MAX_FILE_SIZE_BYTES = 10
     
     try:
-        register_resp = client.post(
-            "/api/auth/register",
+        from app.models.user import User
+        from app.services.auth import hash_password
+        user = User(
+            username="testuser2",
+            email="test2@securedata.com",
+            password_hash=hash_password("strongpassword123"),
+            role="user"
+        )
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+
+        login_resp = client.post(
+            "/api/auth/login",
             json={
-                "username": "testuser2",
                 "email": "test2@securedata.com",
                 "password": "strongpassword123"
             }
         )
-        assert register_resp.status_code == 201
-        token = register_resp.cookies.get("secure_data_session")
+        token = login_resp.cookies.get("secure_data_session")
         client.cookies.clear()
         headers = {"Authorization": f"Bearer {token}"}
         

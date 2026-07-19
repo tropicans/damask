@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
     COOKIE_SECURE: bool = False
+    INVITE_EXPIRE_HOURS: int = 48  # Default invite link expiry in hours
+    FRONTEND_URL: str = "http://localhost:5173"  # Base URL for constructing invite registration links
 
     @property
     def cors_origins(self) -> list[str]:

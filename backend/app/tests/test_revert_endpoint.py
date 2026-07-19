@@ -39,16 +39,19 @@ def client_fixture(session: Session):
     app.dependency_overrides.clear()
 
 @pytest.fixture(name="auth_headers")
-def auth_headers_fixture(client: TestClient):
-    client.post(
-        "/api/auth/register",
-        json={
-            "username": "revertuser",
-            "email": "revertuser@securedata.com",
-            "password": "password123",
-            "role": "admin"
-        }
+def auth_headers_fixture(client: TestClient, session: Session):
+    from app.models.user import User
+    from app.services.auth import hash_password
+    user = User(
+        username="revertuser",
+        email="revertuser@securedata.com",
+        password_hash=hash_password("password123"),
+        role="admin"
     )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
     login_resp = client.post(
         "/api/auth/login",
         json={

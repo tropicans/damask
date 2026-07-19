@@ -27,13 +27,14 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 def init_db() -> None:
     """
-    Initializes database tables. Imports all SQLModel tables (User, MaskingJob, JobDetail, RevertJob)
+    Initializes database tables. Imports all SQLModel tables (User, MaskingJob, JobDetail, RevertJob, Invite)
     to register them with metadata before creating tables in SQLite/Postgres.
     """
     # Import models here to register them with SQLModel metadata
-    from app.models.user import User  # noqa
+    from app.models.user import User, Invite  # noqa
     from app.models.job import MaskingJob, JobDetail, RevertJob  # noqa
     SQLModel.metadata.create_all(engine)
+
 
 def get_session():
     """

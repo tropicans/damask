@@ -43,16 +43,18 @@ def client_fixture(session: Session):
     app.dependency_overrides.clear()
 
 @pytest.fixture(name="auth_headers")
-def auth_headers_fixture(client: TestClient):
-    client.post(
-        "/api/auth/register",
-        json={
-            "username": "jobuser",
-            "email": "jobuser@securedata.com",
-            "password": "password123",
-            "role": "admin"
-        }
+def auth_headers_fixture(client: TestClient, session: Session):
+    from app.services.auth import hash_password
+    user = User(
+        username="jobuser",
+        email="jobuser@securedata.com",
+        password_hash=hash_password("password123"),
+        role="admin"
     )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    
     login_resp = client.post(
         "/api/auth/login",
         json={
@@ -173,24 +175,18 @@ def test_get_job_details(client: TestClient, auth_headers: dict, session: Sessio
     assert data[0]["rule_name"] == "Fake Name"
 
 def test_get_job_details_unauthorized(client: TestClient, auth_headers: dict, session: Session):
-    # Register and login another user
-    client.post(
-        "/api/auth/register",
-        json={
-            "username": "otheruser",
-            "email": "other@securedata.com",
-            "password": "password123",
-            "role": "admin"
-        }
+    from app.services.auth import create_access_token, hash_password
+    other_user = User(
+        username="otheruser",
+        email="other@securedata.com",
+        password_hash=hash_password("password123"),
+        role="admin"
     )
-    other_login = client.post(
-        "/api/auth/login",
-        json={
-            "email": "other@securedata.com",
-            "password": "password123"
-        }
-    )
-    other_token = other_login.cookies.get("secure_data_session")
+    session.add(other_user)
+    session.commit()
+    session.refresh(other_user)
+    
+    other_token = create_access_token(user_id=other_user.id)
     other_headers = {"Authorization": f"Bearer {other_token}"}
     
     # Create job for first user
