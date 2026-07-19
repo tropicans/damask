@@ -57,3 +57,32 @@ class JobDetail(SQLModel, table=True):
     )
     column_name: str = Field(nullable=False)
     rule_name: str = Field(nullable=False)
+
+
+class RevertJob(SQLModel, table=True):
+    """
+    SQLModel representation of the 'revert_jobs' table.
+    Caches metadata for revert audit compliance, such as file name, file size, status, and duration.
+    Does NOT store the file content itself.
+    """
+    __tablename__ = "revert_jobs"
+    
+    id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        primary_key=True,
+        index=True,
+        nullable=False
+    )
+    user_id: str = Field(
+        foreign_key="users.id",
+        ondelete="CASCADE",
+        index=True,
+        nullable=False
+    )
+    file_name: str = Field(nullable=False)
+    file_size_bytes: int = Field(nullable=False)
+    row_count: Optional[int] = Field(default=None, nullable=True)
+    execution_duration_ms: int = Field(nullable=False)
+    status: str = Field(nullable=False)  # "SUCCESS" or "FAILED"
+    error_message: Optional[str] = Field(default=None, nullable=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)

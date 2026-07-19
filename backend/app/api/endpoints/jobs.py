@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from app.db import get_session
 from app.models.user import User
 from app.services.auth import get_current_user
-from app.models.job import MaskingJob, JobDetail
+from app.models.job import MaskingJob, JobDetail, RevertJob
 
 router = APIRouter()
 
@@ -150,3 +150,90 @@ def get_job_details(
     statement = select(JobDetail).where(JobDetail.job_id == job_id)
     details = session.exec(statement).all()
     return details
+
+
+@router.get("/revert", response_model=List[RevertJob])
+def get_revert_jobs(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=100),
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    """
+    Get paginated history of revert jobs for the current logged-in user.
+    Args:
+        skip (int): Number of records to skip (offset).
+        limit (int): Maximum number of records to return.
+        current_user (User): Extracted user profile from JWT Bearer token.
+        session (Session): SQLite database session.
+    Returns:
+        List[RevertJob]: List of revert job history records.
+    """
+    if current_user.role not in ["admin", "auditor"]:
+        raise HTTPException(
+            status_code=403,
+            detail="Akses ditolak. Anda tidak memiliki wewenang untuk mengakses data audit."
+        )
+    statement = (
+        select(RevertJob)
+        .where(RevertJob.user_id == current_user.id)
+        .order_by(RevertJob.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    results = session.exec(statement).all()
+    return results
+
+
+@router.get("/revert/stats", response_model=JobStatsResponse)
+def get_revert_jobs_stats(
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    """
+    Get aggregate stats of revert jobs for the current logged-in user.
+    Calculates total files successfully reverted, total rows restored, and overall success rate.
+    Args:
+        current_user (User): Extracted user profile from JWT Bearer token.
+        session (Session): SQLite database session.
+    Returns:
+        JobStatsResponse: Aggregated statistics response payload.
+    """
+    if current_user.role not in ["admin", "auditor"]:
+        raise HTTPException(
+            status_code=403,
+            detail="Akses ditolak. Anda tidak memiliki wewenang untuk mengakses data audit."
+        )
+    # Total files processed successfully
+    success_stmt = (
+        select(func.count(RevertJob.id))
+        .where(RevertJob.user_id == current_user.id)
+        .where(RevertJob.status == "SUCCESS")
+    )
+    total_files = session.exec(success_stmt).one() or 0
+
+    # Total rows sanitized successfully
+    rows_stmt = (
+        select(func.sum(RevertJob.row_count))
+        .where(RevertJob.user_id == current_user.id)
+        .where(RevertJob.status == "SUCCESS")
+    )
+    total_rows = session.exec(rows_stmt).one() or 0
+
+    # Success rate
+    total_stmt = (
+        select(func.count(RevertJob.id))
+        .where(RevertJob.user_id == current_user.id)
+    )
+    total_jobs = session.exec(total_stmt).one() or 0
+
+    if total_jobs > 0:
+        success_rate = (total_files / total_jobs) * 100.0
+    else:
+        success_rate = 100.0
+
+    return JobStatsResponse(
+        total_files=total_files,
+        total_rows=total_rows,
+        success_rate=round(success_rate, 2)
+    )

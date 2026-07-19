@@ -55,3 +55,37 @@ export const getJobDetails = async (jobId: string): Promise<JobDetailResponse[]>
   const response = await apiClient.get<JobDetailResponse[]>(`/api/jobs/${jobId}/details`);
   return response.data;
 };
+
+export interface RevertJobResponse {
+  id: string;
+  user_id: string;
+  file_name: string;
+  file_size_bytes: number;
+  row_count: number | null;
+  execution_duration_ms: number;
+  status: string; // "SUCCESS" or "FAILED"
+  error_message: string | null;
+  created_at: string;
+}
+
+/**
+ * Retrieves a paginated history list of revert jobs.
+ * @param skip - Number of offset records to skip.
+ * @param limit - Maximum page size limit.
+ * @returns A promise resolving to the list of revert jobs.
+ */
+export const getRevertJobs = async (skip = 0, limit = 10): Promise<RevertJobResponse[]> => {
+  const response = await apiClient.get<RevertJobResponse[]>('/api/jobs/revert', {
+    params: { skip, limit }
+  });
+  return response.data;
+};
+
+/**
+ * Retrieves aggregate execution statistics for revert jobs.
+ * @returns A promise resolving to the user's revert statistics.
+ */
+export const getRevertJobStats = async (): Promise<JobStatsResponse> => {
+  const response = await apiClient.get<JobStatsResponse>('/api/jobs/revert/stats');
+  return response.data;
+};

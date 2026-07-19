@@ -17,7 +17,7 @@ from app.services.masker import mask_dataframe, revert_dataframe
 from app.models.user import User
 from app.services.auth import get_current_user
 from app.db import get_session
-from app.models.job import MaskingJob, JobDetail
+from app.models.job import MaskingJob, JobDetail, RevertJob
 from app.core.limiter import limiter
 
 
@@ -266,67 +266,72 @@ async def revert_file(
     Returns:
         StreamingResponse: Stream containing the restored file.
     """
+    import time
+    start_time = time.perf_counter()
+    row_count = None
+    file_size = 0
     filename = file.filename or ""
-    if not (filename.endswith('.csv') or filename.endswith('.xlsx')):
-        raise HTTPException(
-            status_code=400,
-            detail="Format file tidak didukung. Hanya .csv dan .xlsx yang didukung."
-        )
 
-    if file.content_type not in VALID_MIME_TYPES:
-        raise HTTPException(
-            status_code=400,
-            detail="Tipe MIME file tidak valid."
-        )
-
-    key_filename = key.filename or ""
-    if not key_filename.endswith('.json'):
-        raise HTTPException(
-            status_code=400,
-            detail="Format kunci pemulihan tidak valid. Hanya berkas .json yang didukung."
-        )
-
-    # Validate file size is <= 50MB using the chunked reading loop
-    file_bytes = b""
-    chunk_size = 8192
-    while True:
-        chunk = await file.read(chunk_size)
-        if not chunk:
-            break
-        file_bytes += chunk
-        if len(file_bytes) > MAX_FILE_SIZE_BYTES:
+    try:
+        if not (filename.endswith('.csv') or filename.endswith('.xlsx')):
             raise HTTPException(
-                status_code=413,
-                detail="File terlalu besar. Maksimum ukuran file adalah 50MB."
-            )
-    file_size = len(file_bytes)
-
-    # Validate key size is <= 10MB using the chunked reading loop
-    key_bytes = b""
-    while True:
-        chunk = await key.read(chunk_size)
-        if not chunk:
-            break
-        key_bytes += chunk
-        if len(key_bytes) > MAX_KEY_SIZE_BYTES:
-            raise HTTPException(
-                status_code=413,
-                detail="Berkas kunci terlalu besar. Maksimum ukuran berkas kunci adalah 10MB."
+                status_code=400,
+                detail="Format file tidak didukung. Hanya .csv dan .xlsx yang didukung."
             )
 
-    # Parse key JSON
-    try:
-        mappings = json.loads(key_bytes.decode('utf-8'))
-    except Exception as e:
-        logger.error(f"Error parsing key JSON: {str(e)}")
-        raise HTTPException(
-            status_code=400,
-            detail="Format berkas kunci tidak valid (JSON tidak valid)."
-        )
+        if file.content_type not in VALID_MIME_TYPES:
+            raise HTTPException(
+                status_code=400,
+                detail="Tipe MIME file tidak valid."
+            )
 
-    # Parse masked file into DataFrame
-    file_buffer = io.BytesIO(file_bytes)
-    try:
+        key_filename = key.filename or ""
+        if not key_filename.endswith('.json'):
+            raise HTTPException(
+                status_code=400,
+                detail="Format kunci pemulihan tidak valid. Hanya berkas .json yang didukung."
+            )
+
+        # Validate file size is <= 50MB using the chunked reading loop
+        file_bytes = b""
+        chunk_size = 8192
+        while True:
+            chunk = await file.read(chunk_size)
+            if not chunk:
+                break
+            file_bytes += chunk
+            if len(file_bytes) > MAX_FILE_SIZE_BYTES:
+                raise HTTPException(
+                    status_code=413,
+                    detail="File terlalu besar. Maksimum ukuran file adalah 50MB."
+                )
+        file_size = len(file_bytes)
+
+        # Validate key size is <= 10MB using the chunked reading loop
+        key_bytes = b""
+        while True:
+            chunk = await key.read(chunk_size)
+            if not chunk:
+                break
+            key_bytes += chunk
+            if len(key_bytes) > MAX_KEY_SIZE_BYTES:
+                raise HTTPException(
+                    status_code=413,
+                    detail="Berkas kunci terlalu besar. Maksimum ukuran berkas kunci adalah 10MB."
+                )
+
+        # Parse key JSON
+        try:
+            mappings = json.loads(key_bytes.decode('utf-8'))
+        except Exception as e:
+            logger.error(f"Error parsing key JSON: {str(e)}")
+            raise HTTPException(
+                status_code=400,
+                detail="Format berkas kunci tidak valid (JSON tidak valid)."
+            )
+
+        # Parse masked file into DataFrame
+        file_buffer = io.BytesIO(file_bytes)
         if filename.endswith('.csv'):
             try:
                 df = pd.read_csv(file_buffer, dtype=str)
@@ -336,8 +341,17 @@ async def revert_file(
         else:
             df = pd.read_excel(file_buffer, dtype=str)
 
+        row_count = len(df)
+
         # Call revert_dataframe
-        restored_df = revert_dataframe(df, mappings)
+        try:
+            restored_df = revert_dataframe(df, mappings)
+        except ValueError as val_err:
+            logger.error(f"Validation failed during reversion: {str(val_err)}")
+            raise HTTPException(
+                status_code=400,
+                detail=str(val_err)
+            )
 
         # Write to memory buffer
         output_buffer = io.BytesIO()
@@ -350,28 +364,70 @@ async def revert_file(
             media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             
         output_buffer.seek(0)
-    except ValueError as val_err:
-        logger.error(f"Validation failed during reversion: {str(val_err)}")
-        raise HTTPException(
-            status_code=400,
-            detail=str(val_err)
+        
+        base_name, ext = os.path.splitext(filename)
+        if base_name.endswith('_masked'):
+            base_name = base_name[:-7]
+        reverted_filename = f"{base_name}_reverted{ext}"
+
+        headers = {
+            "Content-Disposition": f"attachment; filename={reverted_filename}",
+            "Access-Control-Expose-Headers": "Content-Disposition"
+        }
+
+        # Log to DB (SUCCESS)
+        duration_ms = int((time.perf_counter() - start_time) * 1000)
+        job = RevertJob(
+            user_id=current_user.id,
+            file_name=filename,
+            file_size_bytes=file_size,
+            row_count=row_count,
+            execution_duration_ms=duration_ms,
+            status="SUCCESS"
         )
+        session.add(job)
+        session.commit()
+
+        return StreamingResponse(output_buffer, media_type=media_type, headers=headers)
+
+    except HTTPException as http_exc:
+        # Log to DB (FAILED)
+        duration_ms = int((time.perf_counter() - start_time) * 1000)
+        try:
+            job = RevertJob(
+                user_id=current_user.id,
+                file_name=filename,
+                file_size_bytes=file_size,
+                row_count=row_count,
+                execution_duration_ms=duration_ms,
+                status="FAILED",
+                error_message=str(http_exc.detail)[:250]
+            )
+            session.add(job)
+            session.commit()
+        except Exception as db_err:
+            logger.error(f"Failed to log revert job failure: {str(db_err)}")
+        raise http_exc
+
     except Exception as e:
-        logger.error(f"Error processing file reversion: {str(e)}", exc_info=True)
+        # Log to DB (FAILED)
+        duration_ms = int((time.perf_counter() - start_time) * 1000)
+        try:
+            job = RevertJob(
+                user_id=current_user.id,
+                file_name=filename,
+                file_size_bytes=file_size,
+                row_count=row_count,
+                execution_duration_ms=duration_ms,
+                status="FAILED",
+                error_message=str(e)[:250]
+            )
+            session.add(job)
+            session.commit()
+        except Exception as db_err:
+            logger.error(f"Failed to log revert job failure: {str(db_err)}")
         raise HTTPException(
             status_code=400,
             detail=f"Gagal memproses pemulihan data: {str(e)}"
         )
-
-    base_name, ext = os.path.splitext(filename)
-    if base_name.endswith('_masked'):
-        base_name = base_name[:-7]
-    reverted_filename = f"{base_name}_reverted{ext}"
-
-    headers = {
-        "Content-Disposition": f"attachment; filename={reverted_filename}",
-        "Access-Control-Expose-Headers": "Content-Disposition"
-    }
-
-    return StreamingResponse(output_buffer, media_type=media_type, headers=headers)
 
