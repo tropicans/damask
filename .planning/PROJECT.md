@@ -20,16 +20,22 @@ Ensure sensitive data is masked safely and efficiently before it leaves the orga
 - ✓ FR-5: Execute masking transformations using Faker/pandas and trigger automatic file download of the anonymized file — Phase 2
 - ✓ FR-6: Implement user login and register flow to track job history — Phase 3
 - ✓ FR-7: Log job execution metadata (file name, file size, row count, masked columns) for security audits (without storing file contents) — Phase 4
+- ✓ DOC-01: Initialize a dedicated `/docs` directory in the repository workspace — Phase 5
+- ✓ DOC-02: Create root `README.md` containing installation, local development, and startup instructions — Phase 5
+- ✓ DOC-03: Create `/docs/ARCHITECTURE.md` detailing patterns, layers, data flow, and abstractions — Phase 5
+- ✓ DOC-04: Create `/docs/API-SPEC.md` documenting HTTP methods, request headers, parameters, and response models — Phase 5
+- ✓ DOC-05: Create `/docs/DEPLOYMENT.md` providing Docker Compose production configs, volumes, and ports — Phase 5
+- ✓ DOC-06: Write detailed inline docstrings for Python backend models, endpoint routers, and services — Phase 5
+- ✓ DOC-07: Write TypeScript docstrings for React page components and API clients — Phase 5
 
 ### Active
 
-- [ ] DOC-01: Initialize a dedicated `/docs` directory in the repository workspace.
-- [ ] DOC-02: Create root `README.md` containing installation, local development, and startup instructions.
-- [ ] DOC-03: Create `/docs/ARCHITECTURE.md` detailing patterns, layers, data flow, and abstractions.
-- [ ] DOC-04: Create `/docs/API-SPEC.md` documenting HTTP methods, request headers, parameters, and response models.
-- [ ] DOC-05: Create `/docs/DEPLOYMENT.md` providing Docker Compose production configs, volumes, and ports.
-- [ ] DOC-06: Write detailed inline docstrings for Python backend models, endpoint routers, and services.
-- [ ] DOC-07: Write TypeScript docstrings for React page components and API clients.
+- [ ] SEC-01: Move JWT token storage from frontend LocalStorage to HttpOnly, Secure, SameSite cookies
+- [ ] SEC-02: Configure secure HTTP response headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options) and CORS hardening
+- [ ] SEC-03: Implement API rate limiting on backend endpoints (FastAPI-Limiter or slowapi)
+- [ ] SEC-04: Harden input validation and tabular file parsing against malicious injection payloads
+- [ ] SEC-05: Implement CSRF protection (e.g. Double Submit Cookie pattern) for state-changing requests
+- [ ] SEC-06: Restrict dashboard access to authorized roles and secure audit log records
 
 ### Out of Scope
 
@@ -53,6 +59,18 @@ The application is built to run locally or as an internal web tool using a React
 | In-memory streaming | Prevents sensitive raw files from touching server disks, satisfying compliance policies | — Approved & Implemented |
 | Strategy pattern for masking rules | Allows new masking strategies (e.g. custom date shift, salt hashing) to be plugged in easily | — Approved & Implemented |
 | SQLite/PostgreSQL DB | Lightweight audit logging and user management | — Approved & Implemented |
+
+## Current Milestone: v3.0 secured the app
+
+**Goal:** Secure the SecureData Web application by hardening authentication, API communication, and access controls against common web vulnerabilities.
+
+**Target features:**
+- Move JWT token storage from frontend LocalStorage to secure HttpOnly cookies.
+- Configure secure HTTP response headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options) and CORS hardening.
+- Implement API rate limiting on backend endpoints (FastAPI-Limiter or slowapi).
+- Harden input validation and tabular file parsing against malicious injection payloads.
+- Implement CSRF protection for state-changing requests.
+- Restrict dashboard access to authorized roles and secure audit log records.
 
 ## Evolution
 
