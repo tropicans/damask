@@ -9,14 +9,14 @@ Requirements for the security milestone.
 
 ### Cookie-based Authentication (SEC-AUTH)
 
-- [ ] **SEC-01**: Access token (JWT) is stored in a secure, HttpOnly, SameSite=Lax cookie on login/register.
-- [ ] **SEC-02**: Access token cookie is cleared from the client on logout by sending a past-expiration Set-Cookie header.
-- [ ] **SEC-03**: Backend API retrieves JWT from the cookie instead of the Authorization header for authentication checks.
+- [x] **SEC-01**: Access token (JWT) is stored in a secure, HttpOnly, SameSite=Lax cookie on login/register.
+- [x] **SEC-02**: Access token cookie is cleared from the client on logout by sending a past-expiration Set-Cookie header.
+- [x] **SEC-03**: Backend API retrieves JWT from the cookie instead of the Authorization header for authentication checks.
 
 ### CSRF & Browser Protections (SEC-CSRF)
 
-- [ ] **SEC-04**: Double Submit Cookie CSRF protection is implemented for state-changing endpoints (POST/PUT/DELETE).
-- [ ] **SEC-05**: Frontend Axios client automatically captures the CSRF token from the non-HttpOnly cookie and includes it in request headers for all mutating requests.
+- [x] **SEC-04**: Double Submit Cookie CSRF protection is implemented for state-changing endpoints (POST/PUT/DELETE).
+- [x] **SEC-05**: Frontend Axios client automatically captures the CSRF token from the non-HttpOnly cookie and includes it in request headers for all mutating requests.
 - [ ] **SEC-06**: Configure secure HTTP response headers (Content-Security-Policy, Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options) via a global middleware on the backend.
 
 ### Traffic & Payload Hardening (SEC-HARDEN)
@@ -37,17 +37,18 @@ Requirements for the security milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEC-01 | Phase 6 | Pending |
-| SEC-02 | Phase 6 | Pending |
-| SEC-03 | Phase 6 | Pending |
-| SEC-04 | Phase 6 | Pending |
-| SEC-05 | Phase 6 | Pending |
+| SEC-01 | Phase 6 | Complete |
+| SEC-02 | Phase 6 | Complete |
+| SEC-03 | Phase 6 | Complete |
+| SEC-04 | Phase 6 | Complete |
+| SEC-05 | Phase 6 | Complete |
 | SEC-06 | Phase 7 | Pending |
 | SEC-07 | Phase 7 | Pending |
 | SEC-08 | Phase 8 | Pending |
 | SEC-09 | Phase 8 | Pending |
 
 **Coverage:**
+
 - v3 requirements: 9 total
 - Mapped to phases: 9
 - Unmapped: 0 ✓

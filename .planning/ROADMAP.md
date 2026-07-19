@@ -14,18 +14,22 @@
 <summary>✅ v1.0 MVP (Phases 1-4) - SHIPPED 2026-07-19</summary>
 
 ### Phase 1: Foundation & Preview Engine
+
 - **Goal**: Upload CSV/XLSX file strictly in-memory, parse and return the first 3 preview rows with automatic column regex mapping recommendations.
 - **Plans**: 3 plans (completed)
 
 ### Phase 2: Masking Engine & Download
+
 - **Goal**: Configure and execute column-based Faker transformations, and download the masked file in-memory.
 - **Plans**: 3 plans (completed)
 
 ### Phase 3: User Authentication
+
 - **Goal**: Secure login and registration.
 - **Plans**: 2 plans (completed)
 
 ### Phase 4: Audit Logging & Dashboard
+
 - **Goal**: Persist audit logs of masking jobs and display them in a dashboard.
 - **Plans**: 2 plans (completed)
 
@@ -35,6 +39,7 @@
 <summary>✅ v2.0 add documentation (Phase 5) - SHIPPED 2026-07-19</summary>
 
 ### Phase 5: Documentation Suite
+
 - **Goal**: Create architecture, API spec, deployment docs, root README, and annotate codebase with inline docstrings.
 - **Plans**: 3 plans (completed)
 
@@ -45,6 +50,7 @@
 **Milestone Goal:** Secure the application by hardening authentication, API communication, and access controls against common web vulnerabilities.
 
 #### Phase 6: Cookie-based Auth & CSRF Protection
+
 - **Goal**: Move JWT storage from client LocalStorage to HttpOnly cookies and implement Double Submit Cookie CSRF prevention.
 - **Depends on**: Phase 5
 - **Requirements**: SEC-01, SEC-02, SEC-03, SEC-04, SEC-05
@@ -53,10 +59,11 @@
   2. Frontend handles cookie-based auth without storing JWTs in LocalStorage.
   3. State-changing requests verify CSRF token sent in the custom request header matching a CSRF cookie.
 - **Plans**: 2 plans
-  - [ ] 06-01: Implement HttpOnly cookie auth on backend and frontend Axios/state client.
-  - [ ] 06-02: Implement Double Submit Cookie CSRF middleware and update Axios interceptor.
+  - [x] 06-01: Implement HttpOnly cookie auth on backend and frontend Axios/state client.
+  - [x] 06-02: Implement Double Submit Cookie CSRF middleware and update Axios interceptor.
 
 #### Phase 7: Secure Headers & Rate Limiting
+
 - **Goal**: Configure HTTP security headers and restrict API requests using slowapi.
 - **Depends on**: Phase 6
 - **Requirements**: SEC-06, SEC-07
@@ -68,6 +75,7 @@
   - [ ] 07-02: Integrate rate limiting with slowapi.
 
 #### Phase 8: Input Hardening & Role Authorization
+
 - **Goal**: Harden file upload validation and restrict dashboard access by user roles.
 - **Depends on**: Phase 7
 - **Requirements**: SEC-08, SEC-09
@@ -89,7 +97,7 @@
 | 3. User Authentication | v1.0 | 2/2 | Complete | 2026-07-19 |
 | 4. Audit Logging & Dashboard | v1.0 | 2/2 | Complete | 2026-07-19 |
 | 5. Documentation Suite | v2.0 | 3/3 | Complete | 2026-07-19 |
-| 6. Cookie-based Auth & CSRF | v3.0 | 0/2 | Not started | - |
+| 6. Cookie-based Auth & CSRF | v3.0 | 4/2 | Complete    | 2026-07-19 |
 | 7. Secure Headers & Limits | v3.0 | 0/2 | Not started | - |
 | 8. Input & Role Security | v3.0 | 0/2 | Not started | - |
 
