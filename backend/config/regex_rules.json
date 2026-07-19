@@ -1,0 +1,7 @@
+{
+  "Fake Email": ["email", "mail", "surel", "pos-el"],
+  "Fake Name": ["name", "nama", "fullname", "contact"],
+  "Fake Phone": ["phone", "telp", "hp", "mobile", "telepon"],
+  "Anonymize ID/Number": ["id", "code", "nik", "no_", "nomor", "npwp"],
+  "Perturb Numeric": ["salary", "gaji", "price", "harga", "amount", "jumlah", "total", "revenue"]
+}

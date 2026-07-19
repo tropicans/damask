@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "securedata-web-backend"
+version = "0.1.0"
+description = "SecureData Web Backend Service"
+authors = ["Antigravity"]
+readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.110.0"
+uvicorn = "^0.28.0"
+python-multipart = "^0.0.9"
+pandas = "^2.2.0"
+openpyxl = "^3.1.0"
+pydantic-settings = "^2.2.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
