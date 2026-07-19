@@ -92,7 +92,7 @@
   1. Masking engine computes a 1-to-1 bijective mapping cache (original values mapped to masked values) and returns it.
   2. Endpoint `/api/mask/revert` accepts the masked file and the JSON key file, parses and restores original values in-memory, and returns the original file.
   3. Python unit tests verify 100% correctness of faking, scrambling, perturbing, and reversion.
-- **Plans**: 3 plans (Planned)
+- **Plans**: 3 plans (Completed)
 
 #### Phase 10: Revert Interface & Auditing
 - **Goal**: Add "Revert Data" page/tab in UI, support downloading mapping file, log revert executions, and enforce security policies.
@@ -119,7 +119,7 @@
 | 6. Cookie-based Auth & CSRF | v3.0 | 2/2 | Complete | 2026-07-19 |
 | 7. Secure Headers & Limits | v3.0 | 2/2 | Complete | 2026-07-19 |
 | 8. Input & Role Security | v3.0 | 2/2 | Complete | 2026-07-19 |
-| 9. Reversion Key & Backend | v4.0 | 0/3 | Planned | — |
+| 9. Reversion Key & Backend | v4.0 | 3/3 | Complete | 2026-07-19 |
 | 10. Revert UI & Auditing | v4.0 | 0/3 | Planned | — |
 
 ---
