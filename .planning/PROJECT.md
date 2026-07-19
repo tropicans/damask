@@ -8,6 +8,11 @@ SecureData Web is a local/internal web application that allows users to upload C
 
 Ensure sensitive data is masked safely and efficiently before it leaves the organization's secure perimeter.
 
+## Current State
+
+- **Milestone v3.0 (secured the app)**: Completed on 2026-07-19. Fully secured the application with cookie-based session auth, CSRF protection, secure headers, rate limiting, upload hardening, and role authorization.
+- **Total Tests**: 26 tests (all passing in Docker backend container).
+
 ## Requirements
 
 ### Validated
@@ -27,15 +32,16 @@ Ensure sensitive data is masked safely and efficiently before it leaves the orga
 - ✓ DOC-05: Create `/docs/DEPLOYMENT.md` providing Docker Compose production configs, volumes, and ports — Phase 5
 - ✓ DOC-06: Write detailed inline docstrings for Python backend models, endpoint routers, and services — Phase 5
 - ✓ DOC-07: Write TypeScript docstrings for React page components and API clients — Phase 5
+- ✓ SEC-01: Move JWT token storage from frontend LocalStorage to secure HttpOnly, SameSite=Lax cookies — v3.0
+- ✓ SEC-02: Configure secure HTTP response headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options) and CORS hardening — v3.0
+- ✓ SEC-03: Implement API rate limiting on backend endpoints (FastAPI-Limiter or slowapi) — v3.0
+- ✓ SEC-04: Harden input validation and tabular file parsing against malicious injection payloads — v3.0
+- ✓ SEC-05: Implement CSRF protection (Double Submit Cookie pattern) for state-changing requests — v3.0
+- ✓ SEC-06: Restrict dashboard access to authorized roles and secure audit log records — v3.0
 
 ### Active
 
-- [ ] SEC-01: Move JWT token storage from frontend LocalStorage to HttpOnly, Secure, SameSite cookies
-- [ ] SEC-02: Configure secure HTTP response headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options) and CORS hardening
-- [ ] SEC-03: Implement API rate limiting on backend endpoints (FastAPI-Limiter or slowapi)
-- [ ] SEC-04: Harden input validation and tabular file parsing against malicious injection payloads
-- [ ] SEC-05: Implement CSRF protection (e.g. Double Submit Cookie pattern) for state-changing requests
-- [ ] SEC-06: Restrict dashboard access to authorized roles and secure audit log records
+- [ ] Planning next milestone requirements (TBD)
 
 ### Out of Scope
 
@@ -59,35 +65,14 @@ The application is built to run locally or as an internal web tool using a React
 | In-memory streaming | Prevents sensitive raw files from touching server disks, satisfying compliance policies | — Approved & Implemented |
 | Strategy pattern for masking rules | Allows new masking strategies (e.g. custom date shift, salt hashing) to be plugged in easily | — Approved & Implemented |
 | SQLite/PostgreSQL DB | Lightweight audit logging and user management | — Approved & Implemented |
+| HttpOnly Session Cookies | Storing JWTs in HttpOnly SameSite=Lax cookies protects against XSS-based token theft | — Approved & Implemented (v3.0) |
+| Double Submit CSRF Cookie | Validating custom headers matching CSRF cookies blocks Cross-Site Request Forgery | — Approved & Implemented (v3.0) |
+| Chunked Upload Hardening | Inspecting file uploads in 8KB chunks ensures payloads >50MB are rejected before loading fully | — Approved & Implemented (v3.0) |
+| Role-based RBAC Dashboard | Restricting audit metrics to admin/auditor roles enforces least-privilege security policy | — Approved & Implemented (v3.0) |
 
-## Current Milestone: v3.0 secured the app
+## Next Milestone: v4.0 (Planning)
 
-**Goal:** Secure the SecureData Web application by hardening authentication, API communication, and access controls against common web vulnerabilities.
-
-**Target features:**
-- Move JWT token storage from frontend LocalStorage to secure HttpOnly cookies.
-- Configure secure HTTP response headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options) and CORS hardening.
-- Implement API rate limiting on backend endpoints (FastAPI-Limiter or slowapi).
-- Harden input validation and tabular file parsing against malicious injection payloads.
-- Implement CSRF protection for state-changing requests.
-- Restrict dashboard access to authorized roles and secure audit log records.
-
-## Evolution
-
-This document evolves at phase transitions and milestone boundaries.
-
-**After each phase transition** (via `/gsd-transition`):
-1. Requirements invalidated? → Move to Out of Scope with reason
-2. Requirements validated? → Move to Validated with phase reference
-3. New requirements emerged? → Add to Active
-4. Decisions to log? → Add to Key Decisions
-5. "What This Is" still accurate? → Update if drifted
-
-**After each milestone** (via `/gsd-complete-milestone`):
-1. Full review of all sections
-2. Core Value check — still the right priority?
-3. Audit Out of Scope — reasons still valid?
-4. Update Context with current state
+**Goal:** Define and plan next major release features (e.g., custom regex additions, bulk file processing, database connectors, or admin role promotion UI).
 
 ---
-*Last updated: 2026-07-19 after initialization*
+*Last updated: 2026-07-19 after v3.0 milestone*
