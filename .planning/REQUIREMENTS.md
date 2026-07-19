@@ -12,7 +12,7 @@ Requirements for the initial release, mapped directly to roadmap phases.
 - [x] **FILE-01**: User can upload tabular data files in `.csv`, `.xls`, and `.xlsx` formats.
 - [x] **FILE-02**: File size uploads are limited to 50MB maximum to prevent RAM overflow.
 - [x] **FILE-03**: Uploaded files are processed strictly in-memory (RAM buffer) and never written to permanent disk storage.
-- [ ] **FILE-04**: User can download the processed masked file in its original file format (.csv or .xlsx).
+- [x] **FILE-04**: User can download the processed masked file in its original file format (.csv or .xlsx).
 
 ### Column Preview & Recommendation (PREV)
 
@@ -22,13 +22,13 @@ Requirements for the initial release, mapped directly to roadmap phases.
 
 ### Masking Operations (MASK)
 
-- [ ] **MASK-01**: User can select a specific masking rule for each column from a dropdown menu.
-- [ ] **MASK-02**: Support **No Masking** (preserves the original column data).
-- [ ] **MASK-03**: Support **Fake Name** (generates randomized Indonesian or global names).
-- [ ] **MASK-04**: Support **Fake Email** (generates randomized fake email addresses).
-- [ ] **MASK-05**: Support **Fake Phone** (generates randomized phone numbers).
-- [ ] **MASK-06**: Support **Anonymize ID/Number** (scrambles digits and characters).
-- [ ] **MASK-07**: Support **Perturb Numeric** (modifies numerical/financial values by a random factor within $\pm 20\%$).
+- [x] **MASK-01**: User can select a specific masking rule for each column from a dropdown menu.
+- [x] **MASK-02**: Support **No Masking** (preserves the original column data).
+- [x] **MASK-03**: Support **Fake Name** (generates randomized Indonesian or global names).
+- [x] **MASK-04**: Support **Fake Email** (generates randomized fake email addresses).
+- [x] **MASK-05**: Support **Fake Phone** (generates randomized phone numbers).
+- [x] **MASK-06**: Support **Anonymize ID/Number** (scrambles digits and characters).
+- [x] **MASK-07**: Support **Perturb Numeric** (modifies numerical/financial values by a random factor within $\pm 20\%$).
 
 ### User Authentication (AUTH)
 
@@ -70,17 +70,17 @@ Explicitly excluded to prevent scope creep.
 | FILE-01 | Phase 1 | Complete |
 | FILE-02 | Phase 1 | Complete |
 | FILE-03 | Phase 1 | Complete |
-| FILE-04 | Phase 1 | Pending |
+| FILE-04 | Phase 2 | Complete |
 | PREV-01 | Phase 1 | Complete |
 | PREV-02 | Phase 1 | Complete |
 | PREV-03 | Phase 1 | Complete |
-| MASK-01 | Phase 2 | Pending |
-| MASK-02 | Phase 2 | Pending |
-| MASK-03 | Phase 2 | Pending |
-| MASK-04 | Phase 2 | Pending |
-| MASK-05 | Phase 2 | Pending |
-| MASK-06 | Phase 2 | Pending |
-| MASK-07 | Phase 2 | Pending |
+| MASK-01 | Phase 2 | Complete |
+| MASK-02 | Phase 2 | Complete |
+| MASK-03 | Phase 2 | Complete |
+| MASK-04 | Phase 2 | Complete |
+| MASK-05 | Phase 2 | Complete |
+| MASK-06 | Phase 2 | Complete |
+| MASK-07 | Phase 2 | Complete |
 | AUTH-01 | Phase 3 | Pending |
 | AUTH-02 | Phase 3 | Pending |
 | AUTH-03 | Phase 3 | Pending |

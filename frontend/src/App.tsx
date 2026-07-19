@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { ShieldCheck, Trash2 } from 'lucide-react';
+import { ShieldCheck, Trash2, Loader2, Download, AlertCircle } from 'lucide-react';
 import { Dropzone } from './components/Dropzone';
 import { PreviewTable } from './components/PreviewTable';
 import { uploadFileForPreview } from './api/preview';
 import type { PreviewResponse } from './api/preview';
+import { maskFile } from './api/mask';
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isMasking, setIsMasking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [previewData, setPreviewData] = useState<PreviewResponse | null>(null);
   const [selectedRules, setSelectedRules] = useState<Record<string, string>>({});
@@ -46,6 +48,40 @@ function App() {
     setPreviewData(null);
     setSelectedRules({});
     setError(null);
+  };
+
+  const handleMaskExecute = async () => {
+    if (!file || !previewData) return;
+    setIsMasking(true);
+    setError(null);
+    try {
+      const { blob, filename } = await maskFile(file, selectedRules);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      console.error(err);
+      let msg = 'Gagal memproses penyamaran berkas.';
+      if (err.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          const parsed = JSON.parse(text);
+          msg = parsed.detail || msg;
+        } catch (e) {
+          // ignore parsing error, use default msg
+        }
+      } else if (err.response?.data?.detail) {
+        msg = err.response.data.detail;
+      }
+      setError(msg);
+    } finally {
+      setIsMasking(false);
+    }
   };
 
   return (
@@ -111,6 +147,16 @@ function App() {
               </div>
             </div>
 
+            {error && (
+              <div className="mt-4 max-w-2xl mx-auto p-4 bg-red-950/40 border border-red-900/60 rounded-xl flex items-start gap-3 text-red-400 text-sm">
+                <AlertCircle className="shrink-0 mt-0.5" size={18} />
+                <div>
+                  <h4 className="font-semibold mb-1">Gagal memproses penyamaran berkas</h4>
+                  <p>{error}</p>
+                </div>
+              </div>
+            )}
+
             <PreviewTable
               headers={previewData.headers}
               previewRows={previewData.preview_rows}
@@ -121,10 +167,23 @@ function App() {
 
             <div className="mt-8 flex justify-end max-w-6xl mx-auto">
               <button
-                disabled={true}
-                className="bg-indigo-600/50 text-indigo-300 border border-indigo-500/30 px-6 py-2.5 rounded-lg text-sm font-semibold cursor-not-allowed flex items-center gap-2 transition-all duration-200"
+                onClick={handleMaskExecute}
+                disabled={isMasking}
+                className={`bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all duration-200 ${
+                  isMasking ? 'cursor-not-allowed opacity-70' : 'shadow-md shadow-indigo-900/30'
+                }`}
               >
-                Mulai Masking (Tersedia di Phase 2)
+                {isMasking ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Memproses & Mengunduh...
+                  </>
+                ) : (
+                  <>
+                    <Download size={16} />
+                    Mulai Masking & Unduh
+                  </>
+                )}
               </button>
             </div>
           </div>

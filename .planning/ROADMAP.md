@@ -12,7 +12,7 @@ This roadmap defines the transition of SecureData Web from inception to a fully 
 - Decimal phases (e.g. 2.1): Urgent insertions (marked with INSERTED)
 
 - [x] **Phase 1: Foundation & Preview Engine** - In-memory parsing, header extraction, and auto-recommendation regex. (completed 2026-07-19)
-- [ ] **Phase 2: Masking Engine & Download** - Faker strategies, user column configuration, and stream downloads.
+- [x] **Phase 2: Masking Engine & Download** - Faker strategies, user column configuration, and stream downloads. (completed 2026-07-19)
 - [ ] **Phase 3: User Authentication** - JWT login/register security boundaries.
 - [ ] **Phase 4: Audit Logging & Dashboard** - Job execution metadata logging and audit history view.
 
@@ -54,9 +54,9 @@ Plans:
 
 Plans:
 
-- [ ] 02-01: Backend masking strategies (Faker, scrambling, numeric perturbation).
-- [ ] 02-02: UI dropdown selectors and masking execution trigger.
-- [ ] 02-03: File generation, streaming download, and cleanup verification.
+- [x] 02-01: Backend masking strategies (Faker, scrambling, numeric perturbation).
+- [x] 02-02: UI dropdown selectors and masking execution trigger.
+- [x] 02-03: File generation, streaming download, and cleanup verification.
 
 ### Phase 3: User Authentication
 
@@ -104,6 +104,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Preview Engine | 3/3 | Complete    | 2026-07-19 |
-| 2. Masking Engine & Download | 0/3 | Not started | - |
+| 2. Masking Engine & Download | 3/3 | Complete    | 2026-07-19 |
 | 3. User Authentication | 0/2 | Not started | - |
 | 4. Audit Logging & Dashboard | 0/2 | Not started | - |
