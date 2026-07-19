@@ -6,7 +6,8 @@ import { uploadFileForPreview } from './api/preview';
 import type { PreviewResponse } from './api/preview';
 import { maskFile } from './api/mask';
 import { AuthForm } from './components/AuthForm';
-import { getCurrentUser, type UserResponse } from './api/auth';
+import { getCurrentUser, logoutUser, type UserResponse } from './api/auth';
+import { registerUnauthorizedCallback } from './api/client';
 import { AuditDashboard } from './components/AuditDashboard';
 
 /**
@@ -14,9 +15,8 @@ import { AuditDashboard } from './components/AuditDashboard';
  * uploaded file state, and trigger functions for file previews and masking downloads.
  */
 function App() {
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [user, setUser] = useState<UserResponse | null>(null);
-  const [isCheckingSession, setIsCheckingSession] = useState(!!token);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [activeTab, setActiveTab] = useState<'masking' | 'audit'>('masking');
 
   // Active File States
@@ -31,39 +31,42 @@ function App() {
    * Validates the active user session token on app load or token changes.
    */
   useEffect(() => {
+    // Register global 401 unauthorized handler
+    registerUnauthorizedCallback(() => {
+      setUser(null);
+      handleClear();
+    });
+
     const verifySession = async () => {
-      if (token) {
-        try {
-          const userData = await getCurrentUser();
-          setUser(userData);
-        } catch (err) {
-          console.error("Token verification failed:", err);
-          handleLogout();
-        } finally {
-          setIsCheckingSession(false);
-        }
-      } else {
+      try {
+        const userData = await getCurrentUser();
+        setUser(userData);
+      } catch (err) {
+        console.error("Token verification failed:", err);
+        setUser(null);
+      } finally {
         setIsCheckingSession(false);
       }
     };
     verifySession();
-  }, [token]);
+  }, []);
 
   /**
    * Sets token and user objects on successful authentication.
    */
-  const handleAuthSuccess = (newToken: string, loggedInUser: UserResponse) => {
-    localStorage.setItem('token', newToken);
-    setToken(newToken);
+  const handleAuthSuccess = (loggedInUser: UserResponse) => {
     setUser(loggedInUser);
   };
 
   /**
    * Clears session storage and logs out the active user.
    */
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setToken(null);
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch (err) {
+      console.error("Logout request failed:", err);
+    }
     setUser(null);
     setActiveTab('masking');
     handleClear();

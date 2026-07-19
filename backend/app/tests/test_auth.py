@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import SQLModel, create_engine, Session
+from sqlalchemy.pool import StaticPool
 
 from app.main import app
 from app.db import get_session
@@ -8,22 +9,18 @@ from app.models.user import User
 
 import os
 
-TEST_DB_FILE = "test.db"
-# Use an isolated, file-based SQLite database for unit tests to ensure sharing across connections
-test_engine = create_engine(f"sqlite:///{TEST_DB_FILE}", connect_args={"check_same_thread": False})
-
 @pytest.fixture(name="session")
 def session_fixture():
+    # Use an in-memory SQLite database with StaticPool to keep database alive in-memory
+    test_engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool
+    )
     SQLModel.metadata.create_all(test_engine)
     with Session(test_engine) as session:
         yield session
     SQLModel.metadata.drop_all(test_engine)
-    # Remove the test database file
-    if os.path.exists(TEST_DB_FILE):
-        try:
-            os.remove(TEST_DB_FILE)
-        except Exception:
-            pass
 
 @pytest.fixture(name="client")
 def client_fixture(session: Session):
@@ -44,6 +41,7 @@ def test_register_user(client: TestClient):
         }
     )
     assert response.status_code == 201
+    assert "secure_data_session" in response.cookies
     data = response.json()
     assert data["username"] == "testuser"
     assert data["email"] == "test@securedata.com"
@@ -104,10 +102,10 @@ def test_login_user(client: TestClient):
         }
     )
     assert response.status_code == 200
+    assert "secure_data_session" in response.cookies
     data = response.json()
-    assert "access_token" in data
-    assert data["token_type"] == "bearer"
-    assert data["user"]["email"] == "test@securedata.com"
+    assert "access_token" not in data
+    assert data["email"] == "test@securedata.com"
 
 def test_login_wrong_credentials(client: TestClient):
     # Login with non-existent user
@@ -140,28 +138,29 @@ def test_get_me(client: TestClient):
             "password": "strongpassword123"
         }
     )
-    token = login_response.json()["access_token"]
+    token = login_response.cookies.get("secure_data_session")
 
-    # Get /me with valid token
+    # Get /me with valid token in cookie
     response = client.get(
         "/api/auth/me",
-        headers={"Authorization": f"Bearer {token}"}
+        cookies={"secure_data_session": token}
     )
     assert response.status_code == 200
     assert response.json()["username"] == "testuser"
 
-    # Get /me with invalid token
+    # Get /me with invalid token in cookie
     response = client.get(
         "/api/auth/me",
-        headers={"Authorization": "Bearer invalidtoken"}
+        cookies={"secure_data_session": "invalidtoken"}
     )
     assert response.status_code == 401
 
 def test_secure_endpoints_protection(client: TestClient):
-    # Trying preview without auth
+    # Trying preview without auth (triggers CSRF block or auth check)
     response = client.post("/api/preview")
-    assert response.status_code == 401
+    # CSRF blocks unauthenticated mutating requests since session cookie is not set
+    assert response.status_code in [401, 403]
 
     # Trying mask without auth
     response = client.post("/api/mask")
-    assert response.status_code == 401
+    assert response.status_code in [401, 403]

@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = "secret-key-for-dev-purposes-change-in-prod"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
+    COOKIE_SECURE: bool = False
 
     @property
     def cors_origins(self) -> list[str]:

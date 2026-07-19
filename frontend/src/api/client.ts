@@ -5,21 +5,53 @@ import axios from 'axios';
  */
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+let onUnauthorizedCallback: (() => void) | null = null;
+
 /**
- * Axios API client instance with configured base URL and request interceptor.
+ * Registers a callback to be executed when a 401 Unauthorized response is caught.
+ */
+export const registerUnauthorizedCallback = (callback: () => void) => {
+  onUnauthorizedCallback = callback;
+};
+
+/**
+ * Axios API client instance with configured base URL and credentials handling.
  */
 export const apiClient = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
 });
 
 /**
- * Request interceptor to automatically inject the Bearer JWT token from localStorage 
- * into outgoing request headers if it exists.
+ * Request interceptor to extract the CSRF token from the secure_data_csrf cookie
+ * and set the X-CSRF-Token header on mutating requests.
  */
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  if (config.method && ['post', 'put', 'delete', 'patch'].includes(config.method.toLowerCase())) {
+    const csrfCookie = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('secure_data_csrf='));
+    if (csrfCookie) {
+      const csrfToken = csrfCookie.split('=')[1];
+      if (csrfToken) {
+        config.headers['X-CSRF-Token'] = decodeURIComponent(csrfToken);
+      }
+    }
   }
   return config;
 });
+
+/**
+ * Response interceptor to catch 401 Unauthorized errors globally.
+ */
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      if (onUnauthorizedCallback) {
+        onUnauthorizedCallback();
+      }
+    }
+    return Promise.reject(error);
+  }
+);

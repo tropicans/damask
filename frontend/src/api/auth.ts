@@ -30,13 +30,13 @@ export const registerUser = async (username: string, email: string, password: st
 };
 
 /**
- * Log in a user by verifying their credentials and returning a JWT token.
+ * Log in a user by verifying their credentials.
  * @param email - Authenticated email address.
  * @param password - Account password.
- * @returns A promise resolving to the access token response.
+ * @returns A promise resolving to the user profile response.
  */
-export const loginUser = async (email: string, password: string): Promise<TokenResponse> => {
-  const response = await apiClient.post<TokenResponse>('/api/auth/login', {
+export const loginUser = async (email: string, password: string): Promise<UserResponse> => {
+  const response = await apiClient.post<UserResponse>('/api/auth/login', {
     email,
     password,
   });
@@ -44,8 +44,14 @@ export const loginUser = async (email: string, password: string): Promise<TokenR
 };
 
 /**
+ * Log out the currently authenticated user session.
+ */
+export const logoutUser = async (): Promise<void> => {
+  await apiClient.post('/api/auth/logout');
+};
+
+/**
  * Queries active profile details for the currently logged-in user session.
- * Uses Bearer JWT token injected by request interceptor.
  * @returns A promise resolving to the active user's profile.
  */
 export const getCurrentUser = async (): Promise<UserResponse> => {

@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import SQLModel, create_engine, Session, select
+from sqlalchemy.pool import StaticPool
 import json
 import os
 from datetime import datetime, timedelta
@@ -10,13 +11,14 @@ from app.db import get_session
 from app.models.user import User
 from app.models.job import MaskingJob, JobDetail
 
-
-
-TEST_DB_FILE = "test_jobs.db"
-test_engine = create_engine(f"sqlite:///{TEST_DB_FILE}", connect_args={"check_same_thread": False})
-
 @pytest.fixture(name="session")
 def session_fixture():
+    # Use in-memory SQLite with StaticPool so same DB is shared across connections
+    test_engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool
+    )
     # Make sure SQLite foreign keys are enabled on connect event for the test engine as well
     from sqlalchemy import event
     from sqlalchemy.engine import Engine
@@ -30,11 +32,6 @@ def session_fixture():
     with Session(test_engine) as session:
         yield session
     SQLModel.metadata.drop_all(test_engine)
-    if os.path.exists(TEST_DB_FILE):
-        try:
-            os.remove(TEST_DB_FILE)
-        except Exception:
-            pass
 
 @pytest.fixture(name="client")
 def client_fixture(session: Session):
@@ -62,7 +59,8 @@ def auth_headers_fixture(client: TestClient):
             "password": "password123"
         }
     )
-    token = login_resp.json()["access_token"]
+    token = login_resp.cookies.get("secure_data_session")
+    client.cookies.clear()
     return {"Authorization": f"Bearer {token}"}
 
 def test_masking_logging_success(client: TestClient, auth_headers: dict, session: Session):
@@ -190,7 +188,7 @@ def test_get_job_details_unauthorized(client: TestClient, auth_headers: dict, se
             "password": "password123"
         }
     )
-    other_token = other_login.json()["access_token"]
+    other_token = other_login.cookies.get("secure_data_session")
     other_headers = {"Authorization": f"Bearer {other_token}"}
     
     # Create job for first user

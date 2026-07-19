@@ -3,8 +3,8 @@ import { ShieldCheck, Loader2, AlertCircle, User, Mail, Lock } from 'lucide-reac
 import { loginUser, registerUser, type UserResponse } from '../api/auth';
 
 interface AuthFormProps {
-  /** Callback fired on successful registration or login, providing token and user object. */
-  onAuthSuccess: (token: string, user: UserResponse) => void;
+  /** Callback fired on successful registration or login, providing user object. */
+  onAuthSuccess: (user: UserResponse) => void;
 }
 
 /**
@@ -44,14 +44,14 @@ export const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
 
     try {
       if (isLogin) {
-        const response = await loginUser(email, password);
-        onAuthSuccess(response.access_token, response.user);
+        const user = await loginUser(email, password);
+        onAuthSuccess(user);
       } else {
         // Register first
         await registerUser(username, email, password);
         // Login immediately after registration
-        const loginResponse = await loginUser(email, password);
-        onAuthSuccess(loginResponse.access_token, loginResponse.user);
+        const user = await loginUser(email, password);
+        onAuthSuccess(user);
       }
     } catch (err: any) {
       console.error(err);

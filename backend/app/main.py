@@ -4,18 +4,74 @@ Initializes the API app, CORS middleware, and includes API routers.
 """
 
 import logging
-from fastapi import FastAPI
+import secrets
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api.api import api_router
 from app.db import init_db
-
+from app.services.auth import AuthException
 
 setup_logging()
 logger = logging.getLogger("app.main")
 
 app = FastAPI(title=settings.PROJECT_NAME)
+
+class CSRFMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # Exclude safe methods from verification, but set CSRF cookie if not present
+        if request.method in ["GET", "HEAD", "OPTIONS"]:
+            response = await call_next(request)
+            if not request.cookies.get("secure_data_csrf"):
+                csrf_token = secrets.token_urlsafe(32)
+                response.set_cookie(
+                    key="secure_data_csrf",
+                    value=csrf_token,
+                    httponly=False,  # Accessible to client JS
+                    secure=settings.COOKIE_SECURE,
+                    samesite="lax",
+                    max_age=86400,
+                    domain=None
+                )
+            return response
+
+        # Exclude public auth routes from validation
+        if request.url.path.rstrip('/') in ["/api/auth/login", "/api/auth/register"]:
+            return await call_next(request)
+
+        # Validate CSRF token for mutating methods only if session cookie is present (cookie-based auth)
+        if request.cookies.get("secure_data_session"):
+            csrf_cookie = request.cookies.get("secure_data_csrf")
+            csrf_header = request.headers.get("X-CSRF-Token")
+
+            if not csrf_cookie or not csrf_header or csrf_cookie != csrf_header:
+                return JSONResponse(
+                    status_code=403,
+                    content={"detail": "CSRF token validation failed."}
+                )
+
+        return await call_next(request)
+
+@app.exception_handler(AuthException)
+async def auth_exception_handler(request: Request, exc: AuthException):
+    response = JSONResponse(
+        status_code=401,
+        content={"detail": exc.detail}
+    )
+    response.delete_cookie(
+        key="secure_data_session",
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite="lax",
+        domain=None
+    )
+    return response
+
+# Register CSRFMiddleware before CORSMiddleware
+app.add_middleware(CSRFMiddleware)
 
 app.add_middleware(
     CORSMiddleware,

@@ -3,13 +3,17 @@ from datetime import datetime, timedelta
 from typing import Optional
 import jwt
 import bcrypt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Cookie, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlmodel import Session
 
 from app.core.config import settings
 from app.db import get_session
 from app.models.user import User
+
+class AuthException(Exception):
+    def __init__(self, detail: str):
+        self.detail = detail
 
 logger = logging.getLogger("app.services.auth")
 
@@ -40,25 +44,28 @@ def create_access_token(user_id: str, expires_delta: Optional[timedelta] = None)
     return encoded_jwt
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
+    request: Request,
+    secure_data_session: Optional[str] = Cookie(None),
     session: Session = Depends(get_session)
 ) -> User:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Token otentikasi tidak valid atau telah kedaluwarsa.",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+    token = secure_data_session
+    if not token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+
+    if not token:
+        raise AuthException("Token otentikasi tidak ditemukan.")
     try:
-        token = credentials.credentials
         payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:
-            raise credentials_exception
+            raise AuthException("Token otentikasi tidak valid atau telah kedaluwarsa.")
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError) as e:
         logger.error(f"JWT decode error: {str(e)}")
-        raise credentials_exception
+        raise AuthException("Token otentikasi tidak valid atau telah kedaluwarsa.")
     
     user = session.get(User, user_id)
     if user is None:
-        raise credentials_exception
+        raise AuthException("User tidak ditemukan.")
     return user
