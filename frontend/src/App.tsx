@@ -9,12 +9,17 @@ import { AuthForm } from './components/AuthForm';
 import { getCurrentUser, type UserResponse } from './api/auth';
 import { AuditDashboard } from './components/AuditDashboard';
 
+/**
+ * Main application component. Manages authentication sessions, navigation tabs,
+ * uploaded file state, and trigger functions for file previews and masking downloads.
+ */
 function App() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [user, setUser] = useState<UserResponse | null>(null);
   const [isCheckingSession, setIsCheckingSession] = useState(!!token);
   const [activeTab, setActiveTab] = useState<'masking' | 'audit'>('masking');
 
+  // Active File States
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isMasking, setIsMasking] = useState(false);
@@ -22,6 +27,9 @@ function App() {
   const [previewData, setPreviewData] = useState<PreviewResponse | null>(null);
   const [selectedRules, setSelectedRules] = useState<Record<string, string>>({});
 
+  /**
+   * Validates the active user session token on app load or token changes.
+   */
   useEffect(() => {
     const verifySession = async () => {
       if (token) {
@@ -41,12 +49,18 @@ function App() {
     verifySession();
   }, [token]);
 
+  /**
+   * Sets token and user objects on successful authentication.
+   */
   const handleAuthSuccess = (newToken: string, loggedInUser: UserResponse) => {
     localStorage.setItem('token', newToken);
     setToken(newToken);
     setUser(loggedInUser);
   };
 
+  /**
+   * Clears session storage and logs out the active user.
+   */
   const handleLogout = () => {
     localStorage.removeItem('token');
     setToken(null);
@@ -55,6 +69,10 @@ function App() {
     handleClear();
   };
 
+  /**
+   * Triggers the file upload and preview API.
+   * Caches the output recommendations into local selectedRules state.
+   */
   const handleFileSelect = async (selectedFile: File) => {
     setFile(selectedFile);
     setIsLoading(true);
@@ -77,6 +95,9 @@ function App() {
     }
   };
 
+  /**
+   * Callback fired when a rule in the PreviewTable is modified.
+   */
   const handleRuleChange = (column: string, rule: string) => {
     setSelectedRules((prev) => ({
       ...prev,
@@ -84,6 +105,9 @@ function App() {
     }));
   };
 
+  /**
+   * Clears the active file selection and resets the app state.
+   */
   const handleClear = () => {
     setFile(null);
     setPreviewData(null);
@@ -91,6 +115,10 @@ function App() {
     setError(null);
   };
 
+  /**
+   * Executes the masking engine process. Submits the file along with the rules JSON.
+   * Downloads the resulting masked file using an dynamic browser anchor element.
+   */
   const handleMaskExecute = async () => {
     if (!file || !previewData) return;
     setIsMasking(true);

@@ -1,3 +1,9 @@
+"""
+File Masking router module for SecureData Web.
+Exposes the endpoint to mask uploaded CSV or Excel files in memory,
+stream the anonymized files back, and write job execution metadata to the audit log.
+"""
+
 import io
 import os
 import json
@@ -25,6 +31,21 @@ async def mask_file(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
+    """
+    Applies the configured masking rules to an uploaded file.
+    Performs all operations transiently in memory, streaming the masked file back immediately.
+    Logs success or failure metadata to the database for audit tracking.
+    Args:
+        file (UploadFile): The uploaded file to mask (CSV or XLSX).
+        rules (str): Form parameter containing JSON-stringified column-to-rule mapping.
+        current_user (User): The authenticated user making the request.
+        session (Session): SQLite database session.
+    Raises:
+        HTTPException 400: If parsing or masking fails.
+        HTTPException 413: If file size exceeds the 50MB limit.
+    Returns:
+        StreamingResponse: Stream containing the newly masked file download.
+    """
 
     # Validate extension
     filename = file.filename

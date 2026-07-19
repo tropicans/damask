@@ -1,5 +1,12 @@
 import { apiClient } from './client';
 
+/**
+ * Uploads a file with masking configurations to the backend to mask in-memory.
+ * Reads the 'Content-Disposition' header from the streaming response to extract the output filename.
+ * @param file - Raw CSV or Excel file to mask.
+ * @param rules - Column name to masking rule name mapping.
+ * @returns A promise resolving to an object containing the download blob and filename.
+ */
 export const maskFile = async (
   file: File,
   rules: Record<string, string>

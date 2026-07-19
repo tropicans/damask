@@ -1,3 +1,8 @@
+"""
+Main module for the SecureData Web FastAPI application.
+Initializes the API app, CORS middleware, and includes API routers.
+"""
+
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,10 +29,18 @@ app.include_router(api_router, prefix="/api")
 
 @app.get("/health")
 def health_check():
+    """
+    Simple health check endpoint to verify backend status.
+    Returns:
+        dict: Success message status.
+    """
     return {"status": "success"}
 
 @app.on_event("startup")
 def startup_event():
+    """
+    App startup event handler. Logs configuration and initializes the SQLite database.
+    """
     logger.info(f"Starting {settings.PROJECT_NAME} backend server...")
     logger.info(f"CORS origins configured: {settings.cors_origins}")
     logger.info("Initializing database...")

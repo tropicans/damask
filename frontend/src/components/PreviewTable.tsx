@@ -2,13 +2,21 @@ import React from 'react';
 import { Eye, HelpCircle } from 'lucide-react';
 
 interface PreviewTableProps {
+  /** Column headers of the uploaded dataset. */
   headers: string[];
+  /** Sample rows containing data values for previewing. */
   previewRows: string[][];
+  /** Auto-recommended masking rules suggested by regex analysis of headers. */
   recommendations: Record<string, string>;
+  /** User-configured rules mapped to column names. */
   selectedRules: Record<string, string>;
+  /** Callback fired when a masking rule is modified in a dropdown select. */
   onRuleChange: (column: string, rule: string) => void;
 }
 
+/**
+ * Array of available masking strategy options supported by the backend engine.
+ */
 const MASKING_OPTIONS = [
   "No Masking",
   "Fake Name",
@@ -18,6 +26,10 @@ const MASKING_OPTIONS = [
   "Perturb Numeric"
 ];
 
+/**
+ * Renders the preview matrix of the uploaded file and provides dropdown options
+ * for assigning masking strategies to each header.
+ */
 export const PreviewTable: React.FC<PreviewTableProps> = ({
   headers,
   previewRows,

@@ -1,3 +1,8 @@
+"""
+User models module for SecureData Web.
+Contains SQLModel definitions for database representation and Pydantic models for request/response schemas.
+"""
+
 import uuid
 from datetime import datetime
 from typing import Optional
@@ -5,6 +10,10 @@ from pydantic import BaseModel, EmailStr, Field as PydanticField
 from sqlmodel import Field, SQLModel
 
 class User(SQLModel, table=True):
+    """
+    SQLModel representation of the 'users' table.
+    Stores registered user details with secure password hashes.
+    """
     __tablename__ = "users"
     
     id: str = Field(
@@ -19,15 +28,26 @@ class User(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
 
 class UserRegister(BaseModel):
+    """
+    Pydantic schema used for user registration requests.
+    Validates password length and format of email address.
+    """
     username: str = PydanticField(..., min_length=1, max_length=50)
     email: EmailStr
     password: str = PydanticField(..., min_length=8, description="Password must be at least 8 characters long")
 
 class UserLogin(BaseModel):
+    """
+    Pydantic schema used for user login authentication requests.
+    """
     email: EmailStr
     password: str
 
 class UserResponse(BaseModel):
+    """
+    Pydantic schema for returning user profiles to the frontend.
+    Omits secure password hashes for data protection.
+    """
     id: str
     username: str
     email: EmailStr
@@ -37,9 +57,16 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 class Token(BaseModel):
+    """
+    Pydantic schema returned upon successful user authentication.
+    Contains the JWT access token and logged-in user profile.
+    """
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
 
 class TokenData(BaseModel):
+    """
+    Pydantic schema representation of the decoded JWT payload data.
+    """
     user_id: Optional[str] = None

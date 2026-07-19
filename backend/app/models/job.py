@@ -1,9 +1,19 @@
+"""
+Job models module for SecureData Web.
+Contains SQLModel definitions for tracking audit log metadata of masking jobs.
+"""
+
 import uuid
 from datetime import datetime
 from typing import Optional
 from sqlmodel import Field, SQLModel
 
 class MaskingJob(SQLModel, table=True):
+    """
+    SQLModel representation of the 'masking_jobs' table.
+    Caches metadata for audit compliance, such as file name, file size, status, and row count.
+    Does NOT store the file content itself.
+    """
     __tablename__ = "masking_jobs"
     
     id: str = Field(
@@ -27,6 +37,10 @@ class MaskingJob(SQLModel, table=True):
 
 
 class JobDetail(SQLModel, table=True):
+    """
+    SQLModel representation of the 'job_details' table.
+    Tracks which column was masked under which strategy/rule for a particular job.
+    """
     __tablename__ = "job_details"
     
     id: str = Field(

@@ -1,3 +1,9 @@
+"""
+Audit Logs and History router module for SecureData Web.
+Exposes endpoints for querying paginated masking job history, aggregate statistics,
+and detailed rules applied per column for a specific job.
+"""
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select, func
 from typing import List, Optional
@@ -11,6 +17,9 @@ from app.models.job import MaskingJob, JobDetail
 router = APIRouter()
 
 class JobStatsResponse(BaseModel):
+    """
+    Pydantic schema representing aggregated statistics of masking jobs.
+    """
     total_files: int
     total_rows: int
     success_rate: float
@@ -24,6 +33,13 @@ def get_jobs(
 ):
     """
     Get paginated history of masking jobs for the current logged-in user.
+    Args:
+        skip (int): Number of records to skip (offset).
+        limit (int): Maximum number of records to return.
+        current_user (User): Extracted user profile from JWT Bearer token.
+        session (Session): SQLite database session.
+    Returns:
+        List[MaskingJob]: List of masking job history records.
     """
     statement = (
         select(MaskingJob)
@@ -42,6 +58,12 @@ def get_jobs_stats(
 ):
     """
     Get aggregate stats of masking jobs for the current logged-in user.
+    Calculates total files successfully masked, total rows sanitized, and overall success rate.
+    Args:
+        current_user (User): Extracted user profile from JWT Bearer token.
+        session (Session): SQLite database session.
+    Returns:
+        JobStatsResponse: Aggregated statistics response payload.
     """
     # Total files processed successfully
     success_stmt = (
@@ -85,7 +107,16 @@ def get_job_details(
 ):
     """
     Get masking details (masked columns and their rules) for a specific job.
-    Asserts ownership of the job.
+    Asserts ownership of the job to prevent cross-tenant data leakage.
+    Args:
+        job_id (str): UUID of the masking job.
+        current_user (User): Extracted user profile from JWT Bearer token.
+        session (Session): SQLite database session.
+    Raises:
+        HTTPException 404: If the job is not found.
+        HTTPException 403: If the job belongs to another user.
+    Returns:
+        List[JobDetail]: List of columns and rules applied.
     """
     # Fetch job first to check ownership
     job = session.get(MaskingJob, job_id)

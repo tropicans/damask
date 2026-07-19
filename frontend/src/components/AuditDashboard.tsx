@@ -22,23 +22,31 @@ import {
   type JobDetailResponse 
 } from '../api/jobs';
 
+/**
+ * AuditDashboard component providing administrative users with compliance summaries
+ * and detailed metrics for previous execution runs.
+ */
 export function AuditDashboard() {
   const [jobs, setJobs] = useState<MaskingJobResponse[]>([]);
   const [stats, setStats] = useState<JobStatsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Pagination
+  // Pagination State
   const [page, setPage] = useState(0);
   const limit = 10;
   const [hasMore, setHasMore] = useState(false);
 
-  // Modal State
+  // Modal State for individual Job Details
   const [selectedJob, setSelectedJob] = useState<MaskingJobResponse | null>(null);
   const [jobDetails, setJobDetails] = useState<JobDetailResponse[]>([]);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [detailsError, setDetailsError] = useState<string | null>(null);
 
+  /**
+   * Fetches active jobs list and aggregate stats from the API.
+   * Leverages Promise.all to fetch both datasets in parallel.
+   */
   const fetchDashboardData = async () => {
     setIsLoading(true);
     setError(null);
@@ -65,10 +73,17 @@ export function AuditDashboard() {
     }
   };
 
+  /**
+   * Effect hook to reload data whenever pagination changes.
+   */
   useEffect(() => {
     fetchDashboardData();
   }, [page]);
 
+  /**
+   * Opens the job detail modal and retrieves specific columns masked for the selected job.
+   * @param job - Masking job object.
+   */
   const handleOpenDetails = async (job: MaskingJobResponse) => {
     setSelectedJob(job);
     setDetailsError(null);
@@ -88,17 +103,26 @@ export function AuditDashboard() {
     }
   };
 
+  /**
+   * Closes the details modal and resets state.
+   */
   const handleCloseModal = () => {
     setSelectedJob(null);
     setJobDetails([]);
   };
 
+  /**
+   * Formats file size in bytes to a human-readable string (B, KB, MB).
+   */
   const formatSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  /**
+   * Formats ISO date string to localized Indonesian string format.
+   */
   const formatDate = (dateStr: string) => {
     try {
       const d = new Date(dateStr);

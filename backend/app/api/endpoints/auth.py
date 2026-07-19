@@ -1,3 +1,8 @@
+"""
+Authentication router module for SecureData Web.
+Exposes endpoints for user registration, user login, and querying active user details.
+"""
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 
@@ -9,6 +14,16 @@ router = APIRouter()
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register_user(user_in: UserRegister, session: Session = Depends(get_session)):
+    """
+    Registers a new user in the system.
+    Args:
+        user_in (UserRegister): Registration body containing username, email, and password.
+        session (Session): SQLite database session.
+    Raises:
+        HTTPException 400: If the email is already registered.
+    Returns:
+        UserResponse: The newly created User profile record.
+    """
     # Check if email already exists
     statement = select(User).where(User.email == user_in.email)
     existing_user = session.exec(statement).first()
@@ -32,6 +47,16 @@ def register_user(user_in: UserRegister, session: Session = Depends(get_session)
 
 @router.post("/login", response_model=Token)
 def login(credentials: UserLogin, session: Session = Depends(get_session)):
+    """
+    Authenticates user credentials and generates a JWT access token.
+    Args:
+        credentials (UserLogin): User login credentials containing email and password.
+        session (Session): SQLite database session.
+    Raises:
+        HTTPException 400: If credentials are invalid.
+    Returns:
+        Token: Decoded JWT token type, string value, and authenticated user details.
+    """
     statement = select(User).where(User.email == credentials.email)
     user = session.exec(statement).first()
     if not user or not verify_password(credentials.password, user.password_hash):
@@ -45,4 +70,11 @@ def login(credentials: UserLogin, session: Session = Depends(get_session)):
 
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):
+    """
+    Retrieves the currently authenticated user's profile.
+    Args:
+        current_user (User): Extracted user profile from the validated Bearer token.
+    Returns:
+        UserResponse: Current User profile record.
+    """
     return current_user

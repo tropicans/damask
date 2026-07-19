@@ -1,3 +1,9 @@
+"""
+File Preview router module for SecureData Web.
+Exposes the endpoint to parse uploaded CSV or Excel files, extracting
+the headers, first 3 sample rows, and auto-detecting recommended masking rules.
+"""
+
 import io
 import os
 import logging
@@ -21,6 +27,19 @@ async def get_file_preview(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user)
 ):
+    """
+    Parses headers and 3 preview rows of an uploaded file.
+    Suggests recommended masking rules based on regex matches of headers.
+    Processes the file strictly in temporary RAM buffers.
+    Args:
+        file (UploadFile): Uploaded CSV or Excel file (up to 50MB).
+        current_user (User): Currently authenticated user.
+    Raises:
+        HTTPException 400: If file extension is unsupported or parsing fails.
+        HTTPException 413: If file size exceeds the 50MB limit.
+    Returns:
+        dict: Filename, size_bytes, headers list, preview_rows list, and recommendations.
+    """
 
     # Validate extension
     filename = file.filename

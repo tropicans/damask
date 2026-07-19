@@ -2,16 +2,27 @@ import React, { useState, useRef } from 'react';
 import { Upload, AlertCircle, FileSpreadsheet } from 'lucide-react';
 
 interface DropzoneProps {
+  /** Callback fired when a valid CSV or Excel file is dropped or selected. */
   onFileSelect: (file: File) => void;
+  /** Disables inputs and triggers visual loading spinner during upload/preview generation. */
   isLoading: boolean;
+  /** Descriptive error message to display in the alert container. */
   error: string | null;
+  /** Sets or clears the active error message. */
   setError: (error: string | null) => void;
 }
 
+/**
+ * Dropzone component facilitating drag-and-drop or file system selection of CSV/XLSX datasets.
+ * Includes local verification logic for size limits (50MB) and supported file extensions.
+ */
 export const Dropzone: React.FC<DropzoneProps> = ({ onFileSelect, isLoading, error, setError }) => {
   const [isDragActive, setIsDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  /**
+   * Toggles active state of drag-and-drop area.
+   */
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -22,6 +33,9 @@ export const Dropzone: React.FC<DropzoneProps> = ({ onFileSelect, isLoading, err
     }
   };
 
+  /**
+   * Verifies file type and file size constraints before invoking the onFileSelect callback.
+   */
   const processFile = (file: File) => {
     setError(null);
     const validExtensions = ['.csv', '.xlsx'];
@@ -41,6 +55,9 @@ export const Dropzone: React.FC<DropzoneProps> = ({ onFileSelect, isLoading, err
     onFileSelect(file);
   };
 
+  /**
+   * Event handler for drag drop events.
+   */
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -51,12 +68,18 @@ export const Dropzone: React.FC<DropzoneProps> = ({ onFileSelect, isLoading, err
     }
   };
 
+  /**
+   * Event handler for input file changes.
+   */
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       processFile(e.target.files[0]);
     }
   };
 
+  /**
+   * Click handler to trigger file selection dialog.
+   */
   const onButtonClick = () => {
     fileInputRef.current?.click();
   };

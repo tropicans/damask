@@ -3,9 +3,14 @@ import { ShieldCheck, Loader2, AlertCircle, User, Mail, Lock } from 'lucide-reac
 import { loginUser, registerUser, type UserResponse } from '../api/auth';
 
 interface AuthFormProps {
+  /** Callback fired on successful registration or login, providing token and user object. */
   onAuthSuccess: (token: string, user: UserResponse) => void;
 }
 
+/**
+ * AuthForm component rendering Login and Registration tabs.
+ * Validates inputs locally before querying the authentication endpoints.
+ */
 export const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
@@ -14,6 +19,9 @@ export const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * Handles form submit. Performs local validations and authenticates via API helper.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
