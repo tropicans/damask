@@ -7,11 +7,12 @@ the headers, first 3 sample rows, and auto-detecting recommended masking rules.
 import io
 import os
 import logging
-from fastapi import APIRouter, File, UploadFile, HTTPException, Depends
+from fastapi import APIRouter, File, UploadFile, HTTPException, Depends, Request
 from app.services.parser import parse_csv_preview, parse_xlsx_preview
 from app.services.detector import recommend_masking_rules
 from app.models.user import User
 from app.services.auth import get_current_user
+from app.core.limiter import limiter
 
 
 logger = logging.getLogger("app.api.endpoints.preview")
@@ -23,7 +24,9 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 RULES_CONFIG_PATH = os.path.abspath(os.path.join(current_dir, "../../../config/regex_rules.json"))
 
 @router.post("/preview")
+@limiter.limit("10/minute")
 async def get_file_preview(
+    request: Request,
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user)
 ):
@@ -32,6 +35,7 @@ async def get_file_preview(
     Suggests recommended masking rules based on regex matches of headers.
     Processes the file strictly in temporary RAM buffers.
     Args:
+        request (Request): FastAPI request object for rate limiting.
         file (UploadFile): Uploaded CSV or Excel file (up to 50MB).
         current_user (User): Currently authenticated user.
     Raises:

@@ -3,18 +3,21 @@ Authentication router module for SecureData Web.
 Exposes endpoints for user registration, user login, and querying active user details.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from sqlmodel import Session, select
 
 from app.db import get_session
 from app.models.user import User, UserRegister, UserLogin, UserResponse
 from app.services.auth import hash_password, verify_password, create_access_token, get_current_user
 from app.core.config import settings
+from app.core.limiter import limiter
 
 router = APIRouter()
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/minute")
 def register_user(
+    request: Request,
     user_in: UserRegister,
     response: Response,
     session: Session = Depends(get_session)
@@ -22,6 +25,7 @@ def register_user(
     """
     Registers a new user in the system.
     Args:
+        request (Request): FastAPI request object for rate limiting.
         user_in (UserRegister): Registration body containing username, email, and password.
         response (Response): FastAPI response to set cookies.
         session (Session): SQLite database session.
@@ -63,7 +67,9 @@ def register_user(
     return user
 
 @router.post("/login", response_model=UserResponse)
+@limiter.limit("5/minute")
 def login(
+    request: Request,
     credentials: UserLogin,
     response: Response,
     session: Session = Depends(get_session)
@@ -71,6 +77,7 @@ def login(
     """
     Authenticates user credentials and sets a JWT access token in HttpOnly cookies.
     Args:
+        request (Request): FastAPI request object for rate limiting.
         credentials (UserLogin): User login credentials containing email and password.
         response (Response): FastAPI response to set cookies.
         session (Session): SQLite database session.

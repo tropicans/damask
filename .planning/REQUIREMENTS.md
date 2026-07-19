@@ -17,11 +17,11 @@ Requirements for the security milestone.
 
 - [x] **SEC-04**: Double Submit Cookie CSRF protection is implemented for state-changing endpoints (POST/PUT/DELETE).
 - [x] **SEC-05**: Frontend Axios client automatically captures the CSRF token from the non-HttpOnly cookie and includes it in request headers for all mutating requests.
-- [ ] **SEC-06**: Configure secure HTTP response headers (Content-Security-Policy, Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options) via a global middleware on the backend.
+- [x] **SEC-06**: Configure secure HTTP response headers (Content-Security-Policy, Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options) via a global middleware on the backend.
 
 ### Traffic & Payload Hardening (SEC-HARDEN)
 
-- [ ] **SEC-07**: Configure rate limiting on authentication routes (login, register) and data upload/masking routes.
+- [x] **SEC-07**: Configure rate limiting on authentication routes (login, register) and data upload/masking routes.
 - [ ] **SEC-08**: Harden input validation for incoming CSV/XLSX file uploads (strict 50MB payload limits, MIME-type and extension validation).
 - [ ] **SEC-09**: Restrict access to the dashboard and audit log endpoints to users with authorized roles.
 
@@ -42,8 +42,8 @@ Requirements for the security milestone.
 | SEC-03 | Phase 6 | Complete |
 | SEC-04 | Phase 6 | Complete |
 | SEC-05 | Phase 6 | Complete |
-| SEC-06 | Phase 7 | Pending |
-| SEC-07 | Phase 7 | Pending |
+| SEC-06 | Phase 7 | Complete |
+| SEC-07 | Phase 7 | Complete |
 | SEC-08 | Phase 8 | Pending |
 | SEC-09 | Phase 8 | Pending |
 

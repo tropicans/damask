@@ -8,7 +8,7 @@ import io
 import os
 import json
 import logging
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends, Request
 from fastapi.responses import StreamingResponse
 import pandas as pd
 from sqlmodel import Session
@@ -17,6 +17,7 @@ from app.models.user import User
 from app.services.auth import get_current_user
 from app.db import get_session
 from app.models.job import MaskingJob, JobDetail
+from app.core.limiter import limiter
 
 
 logger = logging.getLogger("app.api.endpoints.mask")
@@ -25,7 +26,9 @@ router = APIRouter()
 MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024  # 50MB
 
 @router.post("/mask")
+@limiter.limit("10/minute")
 async def mask_file(
+    request: Request,
     file: UploadFile = File(...),
     rules: str = Form(...),
     current_user: User = Depends(get_current_user),
@@ -36,6 +39,7 @@ async def mask_file(
     Performs all operations transiently in memory, streaming the masked file back immediately.
     Logs success or failure metadata to the database for audit tracking.
     Args:
+        request (Request): FastAPI request object for rate limiting.
         file (UploadFile): The uploaded file to mask (CSV or XLSX).
         rules (str): Form parameter containing JSON-stringified column-to-rule mapping.
         current_user (User): The authenticated user making the request.

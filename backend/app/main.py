@@ -9,16 +9,21 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api.api import api_router
 from app.db import init_db
 from app.services.auth import AuthException
+from app.core.limiter import limiter
 
 setup_logging()
 logger = logging.getLogger("app.main")
 
 app = FastAPI(title=settings.PROJECT_NAME)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 class CSRFMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -55,6 +60,17 @@ class CSRFMiddleware(BaseHTTPMiddleware):
 
         return await call_next(request)
 
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["Content-Security-Policy"] = "default-src 'self'; frame-ancestors 'none';"
+        response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        return response
+
 @app.exception_handler(AuthException)
 async def auth_exception_handler(request: Request, exc: AuthException):
     response = JSONResponse(
@@ -72,6 +88,7 @@ async def auth_exception_handler(request: Request, exc: AuthException):
 
 # Register CSRFMiddleware before CORSMiddleware
 app.add_middleware(CSRFMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
