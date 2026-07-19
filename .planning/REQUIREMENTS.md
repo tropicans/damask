@@ -9,16 +9,16 @@ Requirements for the initial release, mapped directly to roadmap phases.
 
 ### File Management (FILE)
 
-- [ ] **FILE-01**: User can upload tabular data files in `.csv`, `.xls`, and `.xlsx` formats.
-- [ ] **FILE-02**: File size uploads are limited to 50MB maximum to prevent RAM overflow.
-- [ ] **FILE-03**: Uploaded files are processed strictly in-memory (RAM buffer) and never written to permanent disk storage.
+- [x] **FILE-01**: User can upload tabular data files in `.csv`, `.xls`, and `.xlsx` formats.
+- [x] **FILE-02**: File size uploads are limited to 50MB maximum to prevent RAM overflow.
+- [x] **FILE-03**: Uploaded files are processed strictly in-memory (RAM buffer) and never written to permanent disk storage.
 - [ ] **FILE-04**: User can download the processed masked file in its original file format (.csv or .xlsx).
 
 ### Column Preview & Recommendation (PREV)
 
-- [ ] **PREV-01**: System parses the file to read column headers.
-- [ ] **PREV-02**: System reads and displays the first 3 rows of data in the UI as a preview.
-- [ ] **PREV-03**: System uses regex rules on column names to suggest default masking strategies.
+- [x] **PREV-01**: System parses the file to read column headers.
+- [x] **PREV-02**: System reads and displays the first 3 rows of data in the UI as a preview.
+- [x] **PREV-03**: System uses regex rules on column names to suggest default masking strategies.
 
 ### Masking Operations (MASK)
 
@@ -67,13 +67,13 @@ Explicitly excluded to prevent scope creep.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FILE-01 | Phase 1 | Pending |
-| FILE-02 | Phase 1 | Pending |
-| FILE-03 | Phase 1 | Pending |
+| FILE-01 | Phase 1 | Complete |
+| FILE-02 | Phase 1 | Complete |
+| FILE-03 | Phase 1 | Complete |
 | FILE-04 | Phase 1 | Pending |
-| PREV-01 | Phase 1 | Pending |
-| PREV-02 | Phase 1 | Pending |
-| PREV-03 | Phase 1 | Pending |
+| PREV-01 | Phase 1 | Complete |
+| PREV-02 | Phase 1 | Complete |
+| PREV-03 | Phase 1 | Complete |
 | MASK-01 | Phase 2 | Pending |
 | MASK-02 | Phase 2 | Pending |
 | MASK-03 | Phase 2 | Pending |
@@ -91,6 +91,7 @@ Explicitly excluded to prevent scope creep.
 | AUDT-04 | Phase 4 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 22 total
 - Mapped to phases: 22
 - Unmapped: 0 ✓
