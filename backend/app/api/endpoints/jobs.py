@@ -41,6 +41,11 @@ def get_jobs(
     Returns:
         List[MaskingJob]: List of masking job history records.
     """
+    if current_user.role not in ["admin", "auditor"]:
+        raise HTTPException(
+            status_code=403,
+            detail="Akses ditolak. Anda tidak memiliki wewenang untuk mengakses data audit."
+        )
     statement = (
         select(MaskingJob)
         .where(MaskingJob.user_id == current_user.id)
@@ -65,6 +70,11 @@ def get_jobs_stats(
     Returns:
         JobStatsResponse: Aggregated statistics response payload.
     """
+    if current_user.role not in ["admin", "auditor"]:
+        raise HTTPException(
+            status_code=403,
+            detail="Akses ditolak. Anda tidak memiliki wewenang untuk mengakses data audit."
+        )
     # Total files processed successfully
     success_stmt = (
         select(func.count(MaskingJob.id))
@@ -118,6 +128,11 @@ def get_job_details(
     Returns:
         List[JobDetail]: List of columns and rules applied.
     """
+    if current_user.role not in ["admin", "auditor"]:
+        raise HTTPException(
+            status_code=403,
+            detail="Akses ditolak. Anda tidak memiliki wewenang untuk mengakses data audit."
+        )
     # Fetch job first to check ownership
     job = session.get(MaskingJob, job_id)
     if not job:

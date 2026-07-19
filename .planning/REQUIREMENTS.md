@@ -22,8 +22,8 @@ Requirements for the security milestone.
 ### Traffic & Payload Hardening (SEC-HARDEN)
 
 - [x] **SEC-07**: Configure rate limiting on authentication routes (login, register) and data upload/masking routes.
-- [ ] **SEC-08**: Harden input validation for incoming CSV/XLSX file uploads (strict 50MB payload limits, MIME-type and extension validation).
-- [ ] **SEC-09**: Restrict access to the dashboard and audit log endpoints to users with authorized roles.
+- [x] **SEC-08**: Harden input validation for incoming CSV/XLSX file uploads (strict 50MB payload limits, MIME-type and extension validation).
+- [x] **SEC-09**: Restrict access to the dashboard and audit log endpoints to users with authorized roles.
 
 ## Out of Scope
 
@@ -44,8 +44,8 @@ Requirements for the security milestone.
 | SEC-05 | Phase 6 | Complete |
 | SEC-06 | Phase 7 | Complete |
 | SEC-07 | Phase 7 | Complete |
-| SEC-08 | Phase 8 | Pending |
-| SEC-09 | Phase 8 | Pending |
+| SEC-08 | Phase 8 | Complete |
+| SEC-09 | Phase 8 | Complete |
 
 **Coverage:**
 

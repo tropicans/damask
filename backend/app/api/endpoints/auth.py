@@ -48,7 +48,8 @@ def register_user(
     user = User(
         username=user_in.username,
         email=user_in.email,
-        password_hash=hashed
+        password_hash=hashed,
+        role=user_in.role or "user"
     )
     session.add(user)
     session.commit()

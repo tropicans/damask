@@ -25,6 +25,7 @@ class User(SQLModel, table=True):
     username: str = Field(index=True, nullable=False)
     email: str = Field(unique=True, index=True, nullable=False)
     password_hash: str = Field(nullable=False)
+    role: str = Field(default="user", nullable=False)
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
 
 class UserRegister(BaseModel):
@@ -35,6 +36,7 @@ class UserRegister(BaseModel):
     username: str = PydanticField(..., min_length=1, max_length=50)
     email: EmailStr
     password: str = PydanticField(..., min_length=8, description="Password must be at least 8 characters long")
+    role: Optional[str] = "user"
 
 class UserLogin(BaseModel):
     """
@@ -51,6 +53,7 @@ class UserResponse(BaseModel):
     id: str
     username: str
     email: EmailStr
+    role: str
     created_at: datetime
 
     class Config:

@@ -25,6 +25,15 @@ router = APIRouter()
 
 MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024  # 50MB
 
+VALID_MIME_TYPES = {
+    "text/csv",
+    "application/vnd.ms-excel",
+    "text/x-csv",
+    "application/csv",
+    "text/comma-separated-values",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+}
+
 @router.post("/mask")
 @limiter.limit("10/minute")
 async def mask_file(
@@ -45,30 +54,48 @@ async def mask_file(
         current_user (User): The authenticated user making the request.
         session (Session): SQLite database session.
     Raises:
-        HTTPException 400: If parsing or masking fails.
+        HTTPException 400: If file extension or MIME-type is unsupported or parsing fails.
         HTTPException 413: If file size exceeds the 50MB limit.
     Returns:
         StreamingResponse: Stream containing the newly masked file download.
     """
 
-    # Validate extension
+    # Validate extension and MIME-type
     filename = file.filename
     if not (filename.endswith('.csv') or filename.endswith('.xlsx')):
         raise HTTPException(
             status_code=400,
             detail="Format file tidak didukung. Hanya .csv dan .xlsx yang didukung."
         )
+        
+    if file.content_type not in VALID_MIME_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail="Tipe MIME file tidak valid."
+        )
     
-    # Read entire content into memory (RAM buffer)
-    file_bytes = await file.read()
-    file_size = len(file_bytes)
-    
-    # Check size constraint
-    if file_size > MAX_FILE_SIZE_BYTES:
+    # Quick content-length check
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > MAX_FILE_SIZE_BYTES:
         raise HTTPException(
             status_code=413,
             detail="File terlalu besar. Maksimum ukuran file adalah 50MB."
         )
+        
+    # Read in chunks to prevent reading massive files into memory
+    file_bytes = b""
+    chunk_size = 8192
+    while True:
+        chunk = await file.read(chunk_size)
+        if not chunk:
+            break
+        file_bytes += chunk
+        if len(file_bytes) > MAX_FILE_SIZE_BYTES:
+            raise HTTPException(
+                status_code=413,
+                detail="File terlalu besar. Maksimum ukuran file adalah 50MB."
+            )
+    file_size = len(file_bytes)
         
     logger.info(f"File uploaded for masking: {filename} ({file_size} bytes)")
     

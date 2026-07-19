@@ -49,7 +49,8 @@ def auth_headers_fixture(client: TestClient):
         json={
             "username": "jobuser",
             "email": "jobuser@securedata.com",
-            "password": "password123"
+            "password": "password123",
+            "role": "admin"
         }
     )
     login_resp = client.post(
@@ -178,7 +179,8 @@ def test_get_job_details_unauthorized(client: TestClient, auth_headers: dict, se
         json={
             "username": "otheruser",
             "email": "other@securedata.com",
-            "password": "password123"
+            "password": "password123",
+            "role": "admin"
         }
     )
     other_login = client.post(

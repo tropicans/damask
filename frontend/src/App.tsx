@@ -201,16 +201,18 @@ function App() {
               >
                 Masking Engine
               </button>
-              <button
-                onClick={() => setActiveTab('audit')}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
-                  activeTab === 'audit'
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-                }`}
-              >
-                Riwayat Audit
-              </button>
+              {(user.role === 'admin' || user.role === 'auditor') && (
+                <button
+                  onClick={() => setActiveTab('audit')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
+                    activeTab === 'audit'
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                  }`}
+                >
+                  Riwayat Audit
+                </button>
+              )}
             </nav>
           )}
 
@@ -321,8 +323,12 @@ function App() {
               </div>
             )}
           </>
-        ) : (
+        ) : (user.role === 'admin' || user.role === 'auditor') ? (
           <AuditDashboard />
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-red-400 font-semibold text-sm">Akses ditolak. Peran tidak sah.</p>
+          </div>
         )}
       </main>
 

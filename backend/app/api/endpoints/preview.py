@@ -23,6 +23,15 @@ MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024  # 50MB
 current_dir = os.path.dirname(os.path.abspath(__file__))
 RULES_CONFIG_PATH = os.path.abspath(os.path.join(current_dir, "../../../config/regex_rules.json"))
 
+VALID_MIME_TYPES = {
+    "text/csv",
+    "application/vnd.ms-excel",
+    "text/x-csv",
+    "application/csv",
+    "text/comma-separated-values",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+}
+
 @router.post("/preview")
 @limiter.limit("10/minute")
 async def get_file_preview(
@@ -39,30 +48,48 @@ async def get_file_preview(
         file (UploadFile): Uploaded CSV or Excel file (up to 50MB).
         current_user (User): Currently authenticated user.
     Raises:
-        HTTPException 400: If file extension is unsupported or parsing fails.
+        HTTPException 400: If file extension or MIME-type is unsupported or parsing fails.
         HTTPException 413: If file size exceeds the 50MB limit.
     Returns:
         dict: Filename, size_bytes, headers list, preview_rows list, and recommendations.
     """
 
-    # Validate extension
+    # Validate extension and MIME-type
     filename = file.filename
     if not (filename.endswith('.csv') or filename.endswith('.xlsx')):
         raise HTTPException(
             status_code=400,
             detail="Format file tidak didukung. Hanya .csv dan .xlsx yang didukung."
         )
+        
+    if file.content_type not in VALID_MIME_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail="Tipe MIME file tidak valid."
+        )
     
-    # Read entire content into memory (RAM buffer)
-    file_bytes = await file.read()
-    file_size = len(file_bytes)
-    
-    # Check size constraint
-    if file_size > MAX_FILE_SIZE_BYTES:
+    # Quick content-length check
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > MAX_FILE_SIZE_BYTES:
         raise HTTPException(
             status_code=413,
             detail="File terlalu besar. Maksimum ukuran file adalah 50MB."
         )
+        
+    # Read in chunks to prevent reading massive files into memory
+    file_bytes = b""
+    chunk_size = 8192
+    while True:
+        chunk = await file.read(chunk_size)
+        if not chunk:
+            break
+        file_bytes += chunk
+        if len(file_bytes) > MAX_FILE_SIZE_BYTES:
+            raise HTTPException(
+                status_code=413,
+                detail="File terlalu besar. Maksimum ukuran file adalah 50MB."
+            )
+    file_size = len(file_bytes)
     
     logger.info(f"File uploaded for preview: {filename} ({file_size} bytes)")
     

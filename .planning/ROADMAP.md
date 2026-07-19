@@ -99,7 +99,7 @@
 | 5. Documentation Suite | v2.0 | 3/3 | Complete | 2026-07-19 |
 | 6. Cookie-based Auth & CSRF | v3.0 | 4/2 | Complete    | 2026-07-19 |
 | 7. Secure Headers & Limits | v3.0 | 1/2 | Complete    | 2026-07-19 |
-| 8. Input & Role Security | v3.0 | 0/2 | Not started | - |
+| 8. Input & Role Security | v3.0 | 1/2 | Complete    | 2026-07-19 |
 
 ---
 *Roadmap updated: 2026-07-19*
