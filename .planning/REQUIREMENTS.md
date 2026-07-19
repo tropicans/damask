@@ -1,101 +1,45 @@
-# Requirements: SecureData Web
+# Requirements: SecureData Web (Milestone: add documentation)
 
 **Defined:** 2026-07-19
-**Core Value:** Ensure sensitive data is masked safely and efficiently before it leaves the organization's secure perimeter.
-
-## v1 Requirements
-
-Requirements for the initial release, mapped directly to roadmap phases.
-
-### File Management (FILE)
-
-- [x] **FILE-01**: User can upload tabular data files in `.csv`, `.xls`, and `.xlsx` formats.
-- [x] **FILE-02**: File size uploads are limited to 50MB maximum to prevent RAM overflow.
-- [x] **FILE-03**: Uploaded files are processed strictly in-memory (RAM buffer) and never written to permanent disk storage.
-- [x] **FILE-04**: User can download the processed masked file in its original file format (.csv or .xlsx).
-
-### Column Preview & Recommendation (PREV)
-
-- [x] **PREV-01**: System parses the file to read column headers.
-- [x] **PREV-02**: System reads and displays the first 3 rows of data in the UI as a preview.
-- [x] **PREV-03**: System uses regex rules on column names to suggest default masking strategies.
-
-### Masking Operations (MASK)
-
-- [x] **MASK-01**: User can select a specific masking rule for each column from a dropdown menu.
-- [x] **MASK-02**: Support **No Masking** (preserves the original column data).
-- [x] **MASK-03**: Support **Fake Name** (generates randomized Indonesian or global names).
-- [x] **MASK-04**: Support **Fake Email** (generates randomized fake email addresses).
-- [x] **MASK-05**: Support **Fake Phone** (generates randomized phone numbers).
-- [x] **MASK-06**: Support **Anonymize ID/Number** (scrambles digits and characters).
-- [x] **MASK-07**: Support **Perturb Numeric** (modifies numerical/financial values by a random factor within $\pm 20\%$).
-
-### User Authentication (AUTH)
-
-- [ ] **AUTH-01**: User can create an account with email and password.
-- [ ] **AUTH-02**: User can log in with their email and password to start a session.
-- [ ] **AUTH-03**: User session is maintained securely via JWT.
-- [ ] **AUTH-04**: User can log out to terminate the session.
-
-### Audit Logging & History (AUDT)
-
-- [ ] **AUDT-01**: System records metadata for each masking job (user ID, original file name, file size, row count, and execution status).
-- [ ] **AUDT-02**: System records which columns were masked and with what rules in each job.
-- [ ] **AUDT-03**: User can view a dashboard displaying their personal masking job history.
-- [ ] **AUDT-04**: Job history records contain only metadata and never store the actual contents of the files.
+**Core Value:** Provide clear, comprehensive, and mixed-language (ID/EN) developer and end-user documentation to guide project execution, deployment, and future code contributions.
 
 ## v2 Requirements
 
-Deferred to a future release. Tracked but not in the current roadmap.
+Requirements for the documentation milestone.
 
-### Admin Dashboard (ADMN)
+### Repository Setup & Guidelines (DOC-SETUP)
 
-- **ADMN-01**: Admin can view aggregate usage statistics of the system (total files, total rows processed).
-- **ADMN-02**: Admin can configure system-wide default regex mapping rules.
+- [ ] **DOC-01**: Initialize a dedicated `/docs` directory in the repository workspace.
+- [ ] **DOC-02**: Update/Create the root `README.md` in mixed Indonesian and English to cover project introduction, system overview, prerequisite setup, and quickstart commands for local development.
 
-## Out of Scope
+### Technical & System Documentation (DOC-TECH)
 
-Explicitly excluded to prevent scope creep.
+- [ ] **DOC-03**: Create `/docs/ARCHITECTURE.md` containing overall design patterns, component layer interactions, data masking workflows, state management details, and core abstractions (like the Strategy pattern).
+- [ ] **DOC-04**: Create `/docs/API-SPEC.md` documenting all FastAPI endpoints (auth, preview, mask, and jobs history/stats) with their HTTP methods, request headers, query/body schemas, and JSON response models.
+- [ ] **DOC-05**: Create `/docs/DEPLOYMENT.md` providing Docker Compose production details, volume configurations, port mapping, and key environment variables (`DATABASE_URL`, `JWT_SECRET_KEY`, `CORS_ALLOWED_ORIGINS`).
 
-| Feature | Reason |
-|---------|--------|
-| Cloud-based file storage | Violates primary local privacy and compliance constraint. |
-| Third-party OAuth Login | Avoids external dependencies for the initial internal tool version. |
-| Direct LLM Chat integration | Kept separate to focus purely on local masking and file outputs. |
+### In-Code Documentation (DOC-CODE)
+
+- [ ] **DOC-06**: Write detailed inline docstrings and comments for all key Python backend models, endpoint routers, and service layers (DataMasker, AutoDetection).
+- [ ] **DOC-07**: Write descriptive TypeScript comments and component descriptions for React pages (App, AuditDashboard) and Axios api helpers.
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FILE-01 | Phase 1 | Complete |
-| FILE-02 | Phase 1 | Complete |
-| FILE-03 | Phase 1 | Complete |
-| FILE-04 | Phase 2 | Complete |
-| PREV-01 | Phase 1 | Complete |
-| PREV-02 | Phase 1 | Complete |
-| PREV-03 | Phase 1 | Complete |
-| MASK-01 | Phase 2 | Complete |
-| MASK-02 | Phase 2 | Complete |
-| MASK-03 | Phase 2 | Complete |
-| MASK-04 | Phase 2 | Complete |
-| MASK-05 | Phase 2 | Complete |
-| MASK-06 | Phase 2 | Complete |
-| MASK-07 | Phase 2 | Complete |
-| AUTH-01 | Phase 3 | Pending |
-| AUTH-02 | Phase 3 | Pending |
-| AUTH-03 | Phase 3 | Pending |
-| AUTH-04 | Phase 3 | Pending |
-| AUDT-01 | Phase 4 | Pending |
-| AUDT-02 | Phase 4 | Pending |
-| AUDT-03 | Phase 4 | Pending |
-| AUDT-04 | Phase 4 | Pending |
+| DOC-01 | Phase 5 | Pending |
+| DOC-02 | Phase 5 | Pending |
+| DOC-03 | Phase 5 | Pending |
+| DOC-04 | Phase 5 | Pending |
+| DOC-05 | Phase 5 | Pending |
+| DOC-06 | Phase 5 | Pending |
+| DOC-07 | Phase 5 | Pending |
 
 **Coverage:**
-
-- v1 requirements: 22 total
-- Mapped to phases: 22
+- Active requirements: 7 total
+- Mapped to phases: 7
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-07-19*
-*Last updated: 2026-07-19 after initial definition*
+*Last updated: 2026-07-19 after milestone initialization*

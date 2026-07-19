@@ -23,12 +23,18 @@ Ensure sensitive data is masked safely and efficiently before it leaves the orga
 
 ### Active
 
-*(No active requirements, all completed in Milestone v1.0)*
+- [ ] DOC-01: Initialize a dedicated `/docs` directory in the repository workspace.
+- [ ] DOC-02: Create root `README.md` containing installation, local development, and startup instructions.
+- [ ] DOC-03: Create `/docs/ARCHITECTURE.md` detailing patterns, layers, data flow, and abstractions.
+- [ ] DOC-04: Create `/docs/API-SPEC.md` documenting HTTP methods, request headers, parameters, and response models.
+- [ ] DOC-05: Create `/docs/DEPLOYMENT.md` providing Docker Compose production configs, volumes, and ports.
+- [ ] DOC-06: Write detailed inline docstrings for Python backend models, endpoint routers, and services.
+- [ ] DOC-07: Write TypeScript docstrings for React page components and API clients.
 
 ### Out of Scope
 
 - **Persistent file storage on server** — Excluded to guarantee compliance with privacy regulations (GDPR/UU PDP) by never storing raw data.
-- **Direct cloud LLM API integration** — Out of scope for v1 to keep the initial tool focused purely on the local data sanitization step.
+- **Direct cloud LLM API integration** — Out of scope to keep the initial tool focused purely on the local data sanitization step.
 
 ## Context
 

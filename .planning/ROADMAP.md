@@ -2,108 +2,54 @@
 
 ## Overview
 
-This roadmap defines the transition of SecureData Web from inception to a fully functional local data-masking web application. Slicing features vertically, the roadmap prioritizes the core in-memory file parsing and preview engine, followed by masking execution and download functionality, user authentication, and finally security audit logging.
+This roadmap tracks the development of SecureData Web. After completing the initial software release (Milestone v1.0), we are currently focusing on the Documentation Suite (Milestone v2.0) to solidify developer guidance and deployment procedures.
+
+---
+
+### Archived Milestones
+
+- [Milestone v1.0 (Audit Logging & Dashboard)](file:///c:/Users/X1%20Carbon/Downloads/Projects/self-hosted-ai-starter-kit/Dev/datamask/.planning/milestones/v1.0-ROADMAP.md) — Completed 2026-07-19
+
+---
 
 ## Phases
 
 **Phase Numbering:**
+- Planned phases continue from the previous milestone (Fase 5).
 
-- Integer phases (1, 2, 3, 4): Planned milestone work
-- Decimal phases (e.g. 2.1): Urgent insertions (marked with INSERTED)
+- [ ] **Phase 5: Documentation Suite** - Root README, deployment guides, architectural overview, API specifications, and inline codebase docstrings.
 
-- [x] **Phase 1: Foundation & Preview Engine** - In-memory parsing, header extraction, and auto-recommendation regex. (completed 2026-07-19)
-- [x] **Phase 2: Masking Engine & Download** - Faker strategies, user column configuration, and stream downloads. (completed 2026-07-19)
-- [x] **Phase 3: User Authentication** - JWT login/register security boundaries. (completed 2026-07-19)
-- [x] **Phase 4: Audit Logging & Dashboard** - Job execution metadata logging and audit history view. (completed 2026-07-19)
+---
 
 ## Phase Details
 
-### Phase 1: Foundation & Preview Engine
+### Phase 5: Documentation Suite
 
-**Goal**: Implement file upload management (CSV/XLSX), memory-only processing buffer, column header reading, first 3 rows preview display, and regex-based automatic masking recommendations.
-**Mode**: mvp
-**Depends on**: Nothing
-**Requirements**: FILE-01, FILE-02, FILE-03, PREV-01, PREV-02, PREV-03
+**Goal**: Establish comprehensive mixed Indonesian and English Markdown documentation for both developers and end-users, and annotate the source code.
+**Mode**: docs
+**Depends on**: Milestone v1.0
+**Requirements**: DOC-01, DOC-02, DOC-03, DOC-04, DOC-05, DOC-06, DOC-07
 **Success Criteria** (what must be TRUE):
 
-  1. User can upload a CSV/XLSX file up to 50MB and see it parsed in memory.
-  2. User can view the column headers and first 3 rows as an interactive data preview table.
-  3. UI displays recommended masking rules automatically based on regex matching of column headers.
+  1. `/docs` directory is initialized with `ARCHITECTURE.md`, `API-SPEC.md`, and `DEPLOYMENT.md`.
+  2. Root `README.md` details installation, local setup, and Docker Compose startup.
+  3. Key source files in backend (`api/endpoints`, `models`, `services`) and frontend (`components`, `api`) are annotated with clear, readable docstrings.
 
 **Plans**: 3 plans
 
 Plans:
 
-- [x] 01-01: Backend Uvicorn/FastAPI setup with file upload API.
-- [x] 01-02: Preview and auto-detection engine logic (Pandas/openpyxl/regex).
-- [x] 01-03: Frontend React drag-and-drop file upload and preview page.
+- [ ] 05-01: Setup root README.md and Docker/environment /docs/DEPLOYMENT.md guide.
+- [ ] 05-02: Write /docs/ARCHITECTURE.md and /docs/API-SPEC.md endpoints specification.
+- [ ] 05-03: Add comprehensive inline docstrings and comments across python/typescript codebases.
 
-### Phase 2: Masking Engine & Download
-
-**Goal**: Implement masking execution backend using Faker, user customization controls, and download generator.
-**Mode**: mvp
-**Depends on**: Phase 1
-**Requirements**: FILE-04, MASK-01, MASK-02, MASK-03, MASK-04, MASK-05, MASK-06, MASK-07
-**Success Criteria** (what must be TRUE):
-
-  1. User can select customized masking options for each column via dropdown.
-  2. Masking operations (Fake Name, Fake Email, Fake Phone, Anonymize ID/Number, Perturb Numeric) successfully transform data without saving raw data on server.
-  3. User triggers download and receives the fully masked CSV/XLSX file.
-
-**Plans**: 3 plans
-
-Plans:
-
-- [x] 02-01: Backend masking strategies (Faker, scrambling, numeric perturbation).
-- [x] 02-02: UI dropdown selectors and masking execution trigger.
-- [x] 02-03: File generation, streaming download, and cleanup verification.
-
-### Phase 3: User Authentication
-
-**Goal**: Implement user registration, login, and secure session management.
-**Mode**: mvp
-**Depends on**: Phase 2
-**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04
-**Success Criteria** (what must be TRUE):
-
-  1. User can register an account with validation.
-  2. User can login and log out, with active sessions maintained by JWT.
-  3. Session persists across browser refreshes.
-
-**Plans**: 2 plans
-
-Plans:
-
-- [x] 03-01: Backend user model, password hashing, and JWT token authentication endpoints.
-- [x] 03-02: Frontend login/register views and session context integration.
-
-### Phase 4: Audit Logging & Dashboard
-
-**Goal**: Implement database logging of job execution metadata and history dashboard.
-**Mode**: mvp
-**Depends on**: Phase 3
-**Requirements**: AUDT-01, AUDT-02, AUDT-03, AUDT-04
-**Success Criteria** (what must be TRUE):
-
-  1. Every masking execution writes job metadata (original filename, size, row count, strategies) to database.
-  2. No sensitive file content is written to the audit log.
-  3. User can view a dashboard of their historical masking runs.
-
-**Plans**: 2 plans
-
-Plans:
-
-- [x] 04-01: Backend audit database schema and logger integration.
-- [x] 04-02: Frontend audit history log dashboard.
+---
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4
+Phases execute in numeric order: 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Preview Engine | 3/3 | Complete    | 2026-07-19 |
-| 2. Masking Engine & Download | 3/3 | Complete    | 2026-07-19 |
-| 3. User Authentication | 2/2 | Complete    | 2026-07-19 |
-| 4. Audit Logging & Dashboard | 2/2 | Complete    | 2026-07-19 |
+| 5. Documentation Suite | 0/3 | Planned | - |
