@@ -1,51 +1,86 @@
-# Requirements: SecureData Web - Data Reversion Facility
+# Requirements: SecureData Web — Production Readiness
 
-**Defined:** 2026-07-19
-**Core Value:** Ensure sensitive data can be reverted back to its real values using a zero-knowledge, local-only mapping key, so that no PII is permanently stored on the server.
+**Defined:** 2026-07-19  
+**Core Value:** Harden SecureData Web untuk digunakan bersama secara aman dalam lingkungan multi-user dengan user management, security policy, dan deployment infrastructure yang production-grade.
+
+---
 
 ## v1 Requirements
 
-### Data Reversion (REV)
+### User Management (PROD)
 
-- [ ] **REV-01**: Generate a 1-to-1 bijective mapping of original values to masked values per column during data masking.
-- [ ] **REV-02**: Support downloading the reversion mapping key file (JSON format) alongside the masked file upon successful masking.
-- [ ] **REV-03**: Create a dedicated "Revert Data" page/tab in the React frontend UI allowing users to upload a masked file and its reversion mapping JSON file.
-- [ ] **REV-04**: Implement backend in-memory processing to parse the masked file and apply the reversion mapping JSON to restore original values.
-- [ ] **REV-05**: Record revert execution metadata (original file name, file size, row count, and execution time) in the database audit log.
-- [ ] **REV-06**: Ensure all security measures (CSRF, secure cookies/session, rate limiting, size limits) apply to the revert upload endpoint.
-- [ ] **REV-07**: Handle malformed, corrupted, or mismatched files and mappings gracefully with detailed user-friendly error messages.
+- [ ] **PROD-01**: Admin dapat melihat daftar semua registered users (nama, email, role, status aktif/non-aktif) melalui halaman admin UI.
+- [ ] **PROD-02**: Admin dapat mengubah role user (promote ke admin/auditor atau demote ke user biasa) melalui tombol aksi di halaman admin UI.
+- [ ] **PROD-03**: Admin dapat menonaktifkan (deactivate) akun user sehingga user tersebut tidak dapat login lagi hingga diaktifkan kembali.
+- [ ] **PROD-04**: User registration memerlukan invite link/code yang valid yang dibuat oleh admin; registrasi langsung tanpa invite ditolak.
+- [ ] **PROD-05**: Admin dapat membuat invite link sekali pakai dengan batas waktu kedaluwarsa yang dapat dikonfigurasi (default: 48 jam).
 
-## v2 Requirements
+### Password & Auth Policy (PROD)
 
-### Advanced Reversion
+- [ ] **PROD-06**: Password baru harus memenuhi kebijakan: minimal 8 karakter, mengandung minimal 1 huruf kapital, 1 huruf kecil, dan 1 angka.
+- [ ] **PROD-07**: Halaman registrasi menampilkan indikator kekuatan password secara real-time (Lemah / Sedang / Kuat) berdasarkan kebijakan di atas.
 
-- **REV-V2-01**: Support encrypted reversion mapping files using a user-specified secret key/passphrase.
-- **REV-V2-02**: Support partial column reversion (reverting only selected columns from a fully masked file).
+### Database Migration (PROD)
+
+- [ ] **PROD-08**: Backend mendukung PostgreSQL sebagai database primary dengan konfigurasi `DATABASE_URL` di `.env`.
+- [ ] **PROD-09**: Docker Compose production profile (`docker-compose.prod.yml`) menyertakan service PostgreSQL dengan volume persisten dan health check.
+
+### Deployment & HTTPS (PROD)
+
+- [ ] **PROD-10**: Repository menyertakan panduan deployment produksi (`docs/DEPLOYMENT-PROD.md`) mencakup: setup Nginx reverse proxy, konfigurasi SSL/TLS dengan Let's Encrypt (Certbot), dan environment variable checklist.
+- [ ] **PROD-11**: Disertakan template konfigurasi Nginx (`nginx/nginx.conf`) yang siap pakai untuk meneruskan traffic HTTPS ke backend dan frontend containers.
+
+### Audit Trail Enhancement (PROD)
+
+- [ ] **PROD-12**: Setiap login berhasil dan gagal dicatat ke database (user_id atau email, timestamp, IP address, user agent, dan status success/failed).
+- [ ] **PROD-13**: Admin dapat melihat riwayat login (login history) dan upaya login gagal (failed attempts) di halaman Audit Dashboard.
+- [ ] **PROD-14**: Akun user otomatis dikunci sementara (lock 15 menit) setelah 5 kali gagal login berturut-turut dari IP yang sama.
+
+---
+
+## v2 Requirements (Deferred)
+
+- **PROD-V2-01**: Single Sign-On (SSO) integration with Google Workspace / Microsoft Entra ID.
+- **PROD-V2-02**: Two-factor authentication (TOTP/FIDO2).
+- **PROD-V2-03**: Password expiry and forced rotation policy.
+- **PROD-V2-04**: Organization/group concept for tenant isolation.
+
+---
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Server-side persistence of mapping files | Violates zero-knowledge and privacy compliance (never store PII on server) |
-| Multi-file bulk reversion in a single job | Out of scope for v1 MVP; single file reversion is sufficient |
+| Email delivery service (SMTP) | Invite links can be shared via copy-paste for internal tools; email infra adds external dependency |
+| OAuth / Social Login | SSO deferred to v2; would require external provider setup |
+| Cloud deployment scripts (AWS/GCP/Azure) | Deployment guide covers VPS/bare-metal; cloud-specific IaC out of scope for v5 |
+
+---
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| REV-01 | Phase 9 | Pending |
-| REV-02 | Phase 9 | Pending |
-| REV-03 | Phase 10 | Pending |
-| REV-04 | Phase 9 | Pending |
-| REV-05 | Phase 10 | Pending |
-| REV-06 | Phase 10 | Pending |
-| REV-07 | Phase 9 & 10 | Pending |
+| PROD-01 | Phase 12 | Pending |
+| PROD-02 | Phase 12 | Pending |
+| PROD-03 | Phase 12 | Pending |
+| PROD-04 | Phase 11 | Pending |
+| PROD-05 | Phase 11 | Pending |
+| PROD-06 | Phase 11 | Pending |
+| PROD-07 | Phase 11 | Pending |
+| PROD-08 | Phase 13 | Pending |
+| PROD-09 | Phase 13 | Pending |
+| PROD-10 | Phase 14 | Pending |
+| PROD-11 | Phase 14 | Pending |
+| PROD-12 | Phase 12 | Pending |
+| PROD-13 | Phase 12 | Pending |
+| PROD-14 | Phase 11 | Pending |
 
 **Coverage:**
-- v1 requirements: 7 total
-- Mapped to phases: 7
+
+- v1 requirements: 14 total
+- Mapped to phases: 14
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-07-19*
-*Last updated: 2026-07-19 after initial definition*

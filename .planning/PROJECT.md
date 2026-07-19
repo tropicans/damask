@@ -10,8 +10,8 @@ Ensure sensitive data is masked safely and efficiently before it leaves the orga
 
 ## Current State
 
-- **Milestone v3.0 (secured the app)**: Completed on 2026-07-19. Fully secured the application with cookie-based session auth, CSRF protection, secure headers, rate limiting, upload hardening, and role authorization.
-- **Total Tests**: 26 tests (all passing in Docker backend container).
+- **Milestone v4.0 (data reversion)**: Completed on 2026-07-19. Implemented bijective reversion key generation, in-memory revert processing, Revert Data UI with dual dropzones, and RevertJob audit logging.
+- **Total Tests**: 35 tests (all passing).
 
 ## Requirements
 
@@ -41,12 +41,12 @@ Ensure sensitive data is masked safely and efficiently before it leaves the orga
 
 ### Active
 
-- [ ] REV-01: Bijective 1-to-1 mapping generation during masking
-- [ ] REV-02: Downloadable reversion mapping file (JSON) alongside masked data
-- [ ] REV-03: Revert data UI page for uploading masked file + JSON mapping file
-- [ ] REV-04: Revert file parsing & reconstruction in-memory
-- [ ] REV-05: Revert audit log tracking (metadata only, no PII)
-- [ ] REV-06: Robust error handling for invalid/corrupted files or mismatched mappings
+- [ ] PROD-01: Admin User Management UI — view all users, promote/demote role, deactivate accounts
+- [ ] PROD-02: Password Policy — minimum 8 chars with uppercase+digit, strength indicator in registration UI
+- [ ] PROD-03: PostgreSQL Migration — replace SQLite with PostgreSQL for concurrent multi-user writes
+- [ ] PROD-04: Invite-only Registration — admin generates invite link/code; registration requires valid invite
+- [ ] PROD-05: HTTPS & Deployment Guide — Nginx reverse proxy + SSL/TLS (Let's Encrypt) production config
+- [ ] PROD-06: Audit Trail Enhancement — login history, failed login tracking, user activity log in admin dashboard
 
 ### Out of Scope
 
@@ -75,15 +75,34 @@ The application is built to run locally or as an internal web tool using a React
 | Chunked Upload Hardening | Inspecting file uploads in 8KB chunks ensures payloads >50MB are rejected before loading fully | — Approved & Implemented (v3.0) |
 | Role-based RBAC Dashboard | Restricting audit metrics to admin/auditor roles enforces least-privilege security policy | — Approved & Implemented (v3.0) |
 
-## Current Milestone: v4.0 (Data Reversion)
+## Current Milestone: v5.0 (Production Readiness)
 
-**Goal:** Create a facility to revert masked data back to its original/real values in a secure, zero-knowledge, and stateless manner.
+**Goal:** Harden SecureData Web untuk digunakan bersama secara aman dalam lingkungan multi-user dengan user management, security policy, dan deployment guide yang lengkap.
 
 **Target features:**
-- Reversion mapping generation during data masking (bijective 1-to-1 mapping per column)
-- Downloadable reversion mapping key file (JSON format) alongside the masked file
-- Reversion upload interface (upload masked file + JSON mapping file to download restored file in-memory)
-- Revert job audit logging (file size, row count, metadata only)
+- User Management UI (admin promote/demote role, deactivate user)
+- Password Policy (min 8 char, uppercase+angka, strength indicator di UI)
+- PostgreSQL Migration (ganti SQLite untuk concurrent writes)
+- Invite-only Registration (admin-generated invite link/code)
+- HTTPS & Deployment Guide (Nginx reverse proxy + Let's Encrypt)
+- Audit Trail Enhancement (login history, failed login, activity log)
+
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd-transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd-complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
 
 ---
-*Last updated: 2026-07-19 after v4.0 start*
+*Last updated: 2026-07-19 after v5.0 start*
