@@ -30,3 +30,7 @@ logs/
 # GSD
 .agents/
 scratch/
+
+# Internal design docs — not for version control
+prd.md
+erd.md
