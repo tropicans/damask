@@ -7,11 +7,13 @@ import type { PreviewResponse } from './api/preview';
 import { maskFile } from './api/mask';
 import { AuthForm } from './components/AuthForm';
 import { getCurrentUser, type UserResponse } from './api/auth';
+import { AuditDashboard } from './components/AuditDashboard';
 
 function App() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [user, setUser] = useState<UserResponse | null>(null);
   const [isCheckingSession, setIsCheckingSession] = useState(!!token);
+  const [activeTab, setActiveTab] = useState<'masking' | 'audit'>('masking');
 
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,6 +51,7 @@ function App() {
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
+    setActiveTab('masking');
     handleClear();
   };
 
@@ -154,6 +157,32 @@ function App() {
               <span className="text-[10px] text-slate-500 font-medium">LOCAL DATA SANITIZER</span>
             </div>
           </div>
+
+          {user && (
+            <nav className="flex items-center gap-1 bg-slate-900/60 border border-slate-800/80 rounded-lg p-1">
+              <button
+                onClick={() => setActiveTab('masking')}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
+                  activeTab === 'masking'
+                    ? 'bg-indigo-600 text-white shadow-md'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                }`}
+              >
+                Masking Engine
+              </button>
+              <button
+                onClick={() => setActiveTab('audit')}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
+                  activeTab === 'audit'
+                    ? 'bg-indigo-600 text-white shadow-md'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                }`}
+              >
+                Riwayat Audit
+              </button>
+            </nav>
+          )}
+
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs font-semibold text-slate-300">
               <UserIcon size={14} className="text-indigo-400" />
@@ -174,89 +203,95 @@ function App() {
       </header>
 
       <main className="flex-1 max-w-6xl w-full mx-auto px-6 py-12 flex flex-col items-center">
-        <div className="text-center max-w-xl mx-auto mb-10">
-          <h2 className="text-3xl font-extrabold text-slate-100 tracking-tight mb-3">
-            Sanitasi Tabular Data Anda Secara Instan
-          </h2>
-          <p className="text-sm text-slate-400 leading-relaxed">
-            Unggah file CSV atau XLSX Anda untuk menyamarkan PII (Personal Identifiable Information) sebelum diunggah ke eksternal LLM. Data diproses 100% di dalam memori RAM Anda.
-          </p>
-        </div>
-
-        {!previewData ? (
-          <Dropzone
-            onFileSelect={handleFileSelect}
-            isLoading={isLoading}
-            error={error}
-            setError={setError}
-          />
-        ) : (
-          <div className="w-full">
-            <div className="w-full max-w-2xl mx-auto bg-slate-900 border border-slate-800 p-5 rounded-xl flex items-center justify-between shadow-lg">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-lg">
-                  <ShieldCheck size={22} />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-slate-200 text-sm truncate max-w-xs md:max-w-md">
-                    {file?.name}
-                  </h4>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    {(previewData.size_bytes / 1024).toFixed(1)} KB • {previewData.headers.length} Kolom terdeteksi
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={handleClear}
-                  className="p-2 text-slate-400 hover:text-red-400 bg-slate-950 border border-slate-800 hover:border-red-950 rounded-lg transition-all duration-200"
-                  title="Hapus Berkas"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
+        {activeTab === 'masking' ? (
+          <>
+            <div className="text-center max-w-xl mx-auto mb-10">
+              <h2 className="text-3xl font-extrabold text-slate-100 tracking-tight mb-3">
+                Sanitasi Tabular Data Anda Secara Instan
+              </h2>
+              <p className="text-sm text-slate-400 leading-relaxed">
+                Unggah file CSV atau XLSX Anda untuk menyamarkan PII (Personal Identifiable Information) sebelum diunggah ke eksternal LLM. Data diproses 100% di dalam memori RAM Anda.
+              </p>
             </div>
 
-            {error && (
-              <div className="mt-4 max-w-2xl mx-auto p-4 bg-red-950/40 border border-red-900/60 rounded-xl flex items-start gap-3 text-red-400 text-sm">
-                <AlertCircle className="shrink-0 mt-0.5" size={18} />
-                <div>
-                  <h4 className="font-semibold mb-1">Gagal memproses penyamaran berkas</h4>
-                  <p>{error}</p>
+            {!previewData ? (
+              <Dropzone
+                onFileSelect={handleFileSelect}
+                isLoading={isLoading}
+                error={error}
+                setError={setError}
+              />
+            ) : (
+              <div className="w-full">
+                <div className="w-full max-w-2xl mx-auto bg-slate-900 border border-slate-800 p-5 rounded-xl flex items-center justify-between shadow-lg">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-lg">
+                      <ShieldCheck size={22} />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-slate-200 text-sm truncate max-w-xs md:max-w-md">
+                        {file?.name}
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {(previewData.size_bytes / 1024).toFixed(1)} KB • {previewData.headers.length} Kolom terdeteksi
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleClear}
+                      className="p-2 text-slate-400 hover:text-red-400 bg-slate-950 border border-slate-800 hover:border-red-950 rounded-lg transition-all duration-200"
+                      title="Hapus Berkas"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="mt-4 max-w-2xl mx-auto p-4 bg-red-950/40 border border-red-900/60 rounded-xl flex items-start gap-3 text-red-400 text-sm">
+                    <AlertCircle className="shrink-0 mt-0.5" size={18} />
+                    <div>
+                      <h4 className="font-semibold mb-1">Gagal memproses penyamaran berkas</h4>
+                      <p>{error}</p>
+                    </div>
+                  </div>
+                )}
+
+                <PreviewTable
+                  headers={previewData.headers}
+                  previewRows={previewData.preview_rows}
+                  recommendations={previewData.recommendations}
+                  selectedRules={selectedRules}
+                  onRuleChange={handleRuleChange}
+                />
+
+                <div className="mt-8 flex justify-end max-w-6xl mx-auto">
+                  <button
+                    onClick={handleMaskExecute}
+                    disabled={isMasking}
+                    className={`bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all duration-200 ${
+                      isMasking ? 'cursor-not-allowed opacity-70' : 'shadow-md shadow-indigo-900/30'
+                    }`}
+                  >
+                    {isMasking ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        Memproses & Mengunduh...
+                      </>
+                    ) : (
+                      <>
+                        <Download size={16} />
+                        Mulai Masking & Unduh
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             )}
-
-            <PreviewTable
-              headers={previewData.headers}
-              previewRows={previewData.preview_rows}
-              recommendations={previewData.recommendations}
-              selectedRules={selectedRules}
-              onRuleChange={handleRuleChange}
-            />
-
-            <div className="mt-8 flex justify-end max-w-6xl mx-auto">
-              <button
-                onClick={handleMaskExecute}
-                disabled={isMasking}
-                className={`bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all duration-200 ${
-                  isMasking ? 'cursor-not-allowed opacity-70' : 'shadow-md shadow-indigo-900/30'
-                }`}
-              >
-                {isMasking ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" />
-                    Memproses & Mengunduh...
-                  </>
-                ) : (
-                  <>
-                    <Download size={16} />
-                    Mulai Masking & Unduh
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
+          </>
+        ) : (
+          <AuditDashboard />
         )}
       </main>
 

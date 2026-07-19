@@ -1,0 +1,32 @@
+# Virtual environment
+backend/.venv/
+.venv/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+backend/app/**/__pycache__/
+backend/app/tests/__pycache__/
+
+# Databases
+backend/*.db
+*.db
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Logs
+*.log
+logs/
+
+# IDEs
+.vscode/
+.idea/
+
+# GSD
+.agents/
+scratch/

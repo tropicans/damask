@@ -5,9 +5,12 @@ import logging
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 import pandas as pd
+from sqlmodel import Session
 from app.services.masker import mask_dataframe
 from app.models.user import User
 from app.services.auth import get_current_user
+from app.db import get_session
+from app.models.job import MaskingJob, JobDetail
 
 
 logger = logging.getLogger("app.api.endpoints.mask")
@@ -19,7 +22,8 @@ MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024  # 50MB
 async def mask_file(
     file: UploadFile = File(...),
     rules: str = Form(...),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
 ):
 
     # Validate extension
@@ -49,6 +53,20 @@ async def mask_file(
         rules_dict = json.loads(rules)
     except Exception as e:
         logger.error(f"Error parsing rules JSON: {str(e)}")
+        # Log failed job
+        try:
+            job = MaskingJob(
+                user_id=current_user.id,
+                file_name=filename,
+                file_size_bytes=file_size,
+                row_count=None,
+                status="FAILED",
+                error_message="Format konfigurasi aturan masking tidak valid (JSON tidak valid)."
+            )
+            session.add(job)
+            session.commit()
+        except Exception as db_err:
+            logger.error(f"Failed to log failed masking job: {str(db_err)}")
         raise HTTPException(
             status_code=400,
             detail="Format konfigurasi aturan masking tidak valid (JSON tidak valid)."
@@ -80,8 +98,52 @@ async def mask_file(
             
         output_buffer.seek(0)
         
+        # Log SUCCESS
+        job = MaskingJob(
+            user_id=current_user.id,
+            file_name=filename,
+            file_size_bytes=file_size,
+            row_count=len(df),
+            status="SUCCESS"
+        )
+        session.add(job)
+        session.flush()
+
+        for col, rule in rules_dict.items():
+            if rule != "No Masking" and col in df.columns:
+                detail = JobDetail(
+                    job_id=job.id,
+                    column_name=col,
+                    rule_name=rule
+                )
+                session.add(detail)
+        session.commit()
+        
     except Exception as e:
         logger.error(f"Error processing file masking for {filename}: {str(e)}", exc_info=True)
+        # Log FAILED
+        try:
+            row_count = None
+            try:
+                if 'df' in locals():
+                    row_count = len(df)
+            except:
+                pass
+                
+            err_msg = str(e)[:250]
+            job = MaskingJob(
+                user_id=current_user.id,
+                file_name=filename,
+                file_size_bytes=file_size,
+                row_count=row_count,
+                status="FAILED",
+                error_message=err_msg
+            )
+            session.add(job)
+            session.commit()
+        except Exception as db_err:
+            logger.error(f"Failed to log failed masking job: {str(db_err)}")
+
         # Clean up buffers
         try:
             file_buffer.close()
