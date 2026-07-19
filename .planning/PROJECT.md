@@ -13,16 +13,17 @@ Ensure sensitive data is masked safely and efficiently before it leaves the orga
 ### Validated
 
 - ✓ Technology stack mapped and Git repository initialized — 2026-07-19
+- ✓ FR-1: Manage CSV/XLSX file uploads up to 50MB and process them strictly in-memory (no persistent server disk storage) — Phase 1 & 2
+- ✓ FR-2: Read file headers and retrieve the first 3 rows of data to display as an interactive UI preview — Phase 1
+- ✓ FR-3: Apply regex pattern matching on column headers to recommend default masking rules — Phase 1
+- ✓ FR-4: Allow users to configure masking rules per column (No Masking, Fake Name, Fake Email, Fake Phone, Anonymize ID/Number, Perturb Numeric) — Phase 2
+- ✓ FR-5: Execute masking transformations using Faker/pandas and trigger automatic file download of the anonymized file — Phase 2
+- ✓ FR-6: Implement user login and register flow to track job history — Phase 3
+- ✓ FR-7: Log job execution metadata (file name, file size, row count, masked columns) for security audits (without storing file contents) — Phase 4
 
 ### Active
 
-- [ ] FR-1: Manage CSV/XLSX file uploads up to 50MB and process them strictly in-memory (no persistent server disk storage).
-- [ ] FR-2: Read file headers and retrieve the first 3 rows of data to display as an interactive UI preview.
-- [ ] FR-3: Apply regex pattern matching on column headers to recommend default masking rules.
-- [ ] FR-4: Allow users to configure masking rules per column (No Masking, Fake Name, Fake Email, Fake Phone, Anonymize ID/Number, Perturb Numeric).
-- [ ] FR-5: Execute masking transformations using Faker/pandas and trigger automatic file download of the anonymized file.
-- [ ] FR-6: Implement user login and register flow to track job history.
-- [ ] FR-7: Log job execution metadata (file name, file size, row count, masked columns) for security audits (without storing file contents).
+*(No active requirements, all completed in Milestone v1.0)*
 
 ### Out of Scope
 
@@ -43,9 +44,9 @@ The application is built to run locally or as an internal web tool using a React
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| In-memory streaming | Prevents sensitive raw files from touching server disks, satisfying compliance policies | — Pending |
-| Strategy pattern for masking rules | Allows new masking strategies (e.g. custom date shift, salt hashing) to be plugged in easily | — Pending |
-| SQLite/PostgreSQL DB | Lightweight audit logging and user management | — Pending |
+| In-memory streaming | Prevents sensitive raw files from touching server disks, satisfying compliance policies | — Approved & Implemented |
+| Strategy pattern for masking rules | Allows new masking strategies (e.g. custom date shift, salt hashing) to be plugged in easily | — Approved & Implemented |
+| SQLite/PostgreSQL DB | Lightweight audit logging and user management | — Approved & Implemented |
 
 ## Evolution
 
