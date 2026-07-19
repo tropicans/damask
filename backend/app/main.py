@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api.api import api_router
+from app.db import init_db
+
 
 setup_logging()
 logger = logging.getLogger("app.main")
@@ -18,7 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(api_router)
+app.include_router(api_router, prefix="/api")
 
 @app.get("/health")
 def health_check():
@@ -28,3 +30,6 @@ def health_check():
 def startup_event():
     logger.info(f"Starting {settings.PROJECT_NAME} backend server...")
     logger.info(f"CORS origins configured: {settings.cors_origins}")
+    logger.info("Initializing database...")
+    init_db()
+

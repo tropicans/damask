@@ -1,9 +1,12 @@
 import io
 import os
 import logging
-from fastapi import APIRouter, File, UploadFile, HTTPException
+from fastapi import APIRouter, File, UploadFile, HTTPException, Depends
 from app.services.parser import parse_csv_preview, parse_xlsx_preview
 from app.services.detector import recommend_masking_rules
+from app.models.user import User
+from app.services.auth import get_current_user
+
 
 logger = logging.getLogger("app.api.endpoints.preview")
 router = APIRouter()
@@ -14,7 +17,11 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 RULES_CONFIG_PATH = os.path.abspath(os.path.join(current_dir, "../../../config/regex_rules.json"))
 
 @router.post("/preview")
-async def get_file_preview(file: UploadFile = File(...)):
+async def get_file_preview(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
+
     # Validate extension
     filename = file.filename
     if not (filename.endswith('.csv') or filename.endswith('.xlsx')):

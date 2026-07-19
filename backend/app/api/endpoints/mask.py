@@ -2,10 +2,13 @@ import io
 import os
 import json
 import logging
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 import pandas as pd
 from app.services.masker import mask_dataframe
+from app.models.user import User
+from app.services.auth import get_current_user
+
 
 logger = logging.getLogger("app.api.endpoints.mask")
 router = APIRouter()
@@ -15,8 +18,10 @@ MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024  # 50MB
 @router.post("/mask")
 async def mask_file(
     file: UploadFile = File(...),
-    rules: str = Form(...)
+    rules: str = Form(...),
+    current_user: User = Depends(get_current_user)
 ):
+
     # Validate extension
     filename = file.filename
     if not (filename.endswith('.csv') or filename.endswith('.xlsx')):

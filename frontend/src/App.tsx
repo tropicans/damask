@@ -1,18 +1,56 @@
-import { useState } from 'react';
-import { ShieldCheck, Trash2, Loader2, Download, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ShieldCheck, Trash2, Loader2, Download, AlertCircle, LogOut, User as UserIcon } from 'lucide-react';
 import { Dropzone } from './components/Dropzone';
 import { PreviewTable } from './components/PreviewTable';
 import { uploadFileForPreview } from './api/preview';
 import type { PreviewResponse } from './api/preview';
 import { maskFile } from './api/mask';
+import { AuthForm } from './components/AuthForm';
+import { getCurrentUser, type UserResponse } from './api/auth';
 
 function App() {
+  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [user, setUser] = useState<UserResponse | null>(null);
+  const [isCheckingSession, setIsCheckingSession] = useState(!!token);
+
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isMasking, setIsMasking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [previewData, setPreviewData] = useState<PreviewResponse | null>(null);
   const [selectedRules, setSelectedRules] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const verifySession = async () => {
+      if (token) {
+        try {
+          const userData = await getCurrentUser();
+          setUser(userData);
+        } catch (err) {
+          console.error("Token verification failed:", err);
+          handleLogout();
+        } finally {
+          setIsCheckingSession(false);
+        }
+      } else {
+        setIsCheckingSession(false);
+      }
+    };
+    verifySession();
+  }, [token]);
+
+  const handleAuthSuccess = (newToken: string, loggedInUser: UserResponse) => {
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
+    setUser(loggedInUser);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setToken(null);
+    setUser(null);
+    handleClear();
+  };
 
   const handleFileSelect = async (selectedFile: File) => {
     setFile(selectedFile);
@@ -84,6 +122,25 @@ function App() {
     }
   };
 
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="animate-spin text-indigo-500 mx-auto mb-4" size={40} />
+          <p className="text-sm text-slate-400 font-medium">Memuat Sesi...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <AuthForm onAuthSuccess={handleAuthSuccess} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
       <header className="border-b border-slate-900 bg-slate-950/80 backdrop-blur sticky top-0 z-40">
@@ -97,8 +154,21 @@ function App() {
               <span className="text-[10px] text-slate-500 font-medium">LOCAL DATA SANITIZER</span>
             </div>
           </div>
-          <div className="text-xs text-slate-500 font-medium bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
-            v1.0.0
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs font-semibold text-slate-300">
+              <UserIcon size={14} className="text-indigo-400" />
+              <span>{user.username}</span>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 hover:text-red-400 border border-slate-800 hover:border-red-950/40 rounded-lg text-xs font-semibold text-slate-400 transition-all duration-200"
+            >
+              <LogOut size={14} />
+              <span>Keluar</span>
+            </button>
+            <div className="text-xs text-slate-500 font-medium bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full">
+              v1.0.0
+            </div>
           </div>
         </div>
       </header>
