@@ -82,12 +82,28 @@
 
 </details>
 
-### 🚧 v4.0 feature enhancements (Planned)
+### 🚧 v4.0 Data Reversion (Planned)
 
-#### Phase 9: Custom Configurations & Enhancements
-- **Goal**: Support custom regex patterns, bulk file uploads, and admin role promotion UI.
+#### Phase 9: Reversion Key & Backend Revert Processing
+- **Goal**: Generate bijective 1-to-1 mappings during masking, support downloading the JSON key file, and implement the backend revert processing.
 - **Depends on**: Phase 8
-- **Plans**: TBD
+- **Requirements**: REV-01, REV-02, REV-04, REV-07
+- **Success Criteria**:
+  1. Masking engine computes a 1-to-1 bijective mapping cache (original values mapped to masked values) and returns it.
+  2. Endpoint `/api/mask/revert` accepts the masked file and the JSON key file, parses and restores original values in-memory, and returns the original file.
+  3. Python unit tests verify 100% correctness of faking, scrambling, perturbing, and reversion.
+- **Plans**: 3 plans (Planned)
+
+#### Phase 10: Revert Interface & Auditing
+- **Goal**: Add "Revert Data" page/tab in UI, support downloading mapping file, log revert executions, and enforce security policies.
+- **Depends on**: Phase 9
+- **Requirements**: REV-03, REV-05, REV-06, REV-07
+- **Success Criteria**:
+  1. Success page in UI has a "Download Reversion Key" button.
+  2. Frontend UI features a "Revert Data" page/tab that allows uploading the masked file and the reversion key to download the original.
+  3. Revert operations log metadata (original file name, size, row count, duration) into the audit log.
+  4. Enforce rate limiting and CSRF protection on the reversion endpoint.
+- **Plans**: 3 plans (Planned)
 
 ---
 
@@ -103,6 +119,8 @@
 | 6. Cookie-based Auth & CSRF | v3.0 | 2/2 | Complete | 2026-07-19 |
 | 7. Secure Headers & Limits | v3.0 | 2/2 | Complete | 2026-07-19 |
 | 8. Input & Role Security | v3.0 | 2/2 | Complete | 2026-07-19 |
+| 9. Reversion Key & Backend | v4.0 | 0/3 | Planned | — |
+| 10. Revert UI & Auditing | v4.0 | 0/3 | Planned | — |
 
 ---
 *Roadmap updated: 2026-07-19*
