@@ -13,7 +13,7 @@ This roadmap defines the transition of SecureData Web from inception to a fully 
 
 - [x] **Phase 1: Foundation & Preview Engine** - In-memory parsing, header extraction, and auto-recommendation regex. (completed 2026-07-19)
 - [x] **Phase 2: Masking Engine & Download** - Faker strategies, user column configuration, and stream downloads. (completed 2026-07-19)
-- [ ] **Phase 3: User Authentication** - JWT login/register security boundaries.
+- [x] **Phase 3: User Authentication** - JWT login/register security boundaries. (completed 2026-07-19)
 - [ ] **Phase 4: Audit Logging & Dashboard** - Job execution metadata logging and audit history view.
 
 ## Phase Details
@@ -105,5 +105,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Foundation & Preview Engine | 3/3 | Complete    | 2026-07-19 |
 | 2. Masking Engine & Download | 3/3 | Complete    | 2026-07-19 |
-| 3. User Authentication | 0/2 | Not started | - |
+| 3. User Authentication | 2/2 | Complete    | 2026-07-19 |
 | 4. Audit Logging & Dashboard | 0/2 | Not started | - |
