@@ -1,43 +1,55 @@
-# Requirements: SecureData Web (Milestone: add documentation)
+# Requirements: SecureData Web (Milestone: secured the app)
 
 **Defined:** 2026-07-19
-**Core Value:** Provide clear, comprehensive, and mixed-language (ID/EN) developer and end-user documentation to guide project execution, deployment, and future code contributions.
+**Core Value:** Secure the SecureData Web application by hardening authentication, API communication, and access controls against common web vulnerabilities.
 
-## v2 Requirements
+## v3 Requirements
 
-Requirements for the documentation milestone.
+Requirements for the security milestone.
 
-### Repository Setup & Guidelines (DOC-SETUP)
+### Cookie-based Authentication (SEC-AUTH)
 
-- [ ] **DOC-01**: Initialize a dedicated `/docs` directory in the repository workspace.
-- [ ] **DOC-02**: Update/Create the root `README.md` in mixed Indonesian and English to cover project introduction, system overview, prerequisite setup, and quickstart commands for local development.
+- [ ] **SEC-01**: Access token (JWT) is stored in a secure, HttpOnly, SameSite=Lax cookie on login/register.
+- [ ] **SEC-02**: Access token cookie is cleared from the client on logout by sending a past-expiration Set-Cookie header.
+- [ ] **SEC-03**: Backend API retrieves JWT from the cookie instead of the Authorization header for authentication checks.
 
-### Technical & System Documentation (DOC-TECH)
+### CSRF & Browser Protections (SEC-CSRF)
 
-- [ ] **DOC-03**: Create `/docs/ARCHITECTURE.md` containing overall design patterns, component layer interactions, data masking workflows, state management details, and core abstractions (like the Strategy pattern).
-- [ ] **DOC-04**: Create `/docs/API-SPEC.md` documenting all FastAPI endpoints (auth, preview, mask, and jobs history/stats) with their HTTP methods, request headers, query/body schemas, and JSON response models.
-- [ ] **DOC-05**: Create `/docs/DEPLOYMENT.md` providing Docker Compose production details, volume configurations, port mapping, and key environment variables (`DATABASE_URL`, `JWT_SECRET_KEY`, `CORS_ALLOWED_ORIGINS`).
+- [ ] **SEC-04**: Double Submit Cookie CSRF protection is implemented for state-changing endpoints (POST/PUT/DELETE).
+- [ ] **SEC-05**: Frontend Axios client automatically captures the CSRF token from the non-HttpOnly cookie and includes it in request headers for all mutating requests.
+- [ ] **SEC-06**: Configure secure HTTP response headers (Content-Security-Policy, Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options) via a global middleware on the backend.
 
-### In-Code Documentation (DOC-CODE)
+### Traffic & Payload Hardening (SEC-HARDEN)
 
-- [ ] **DOC-06**: Write detailed inline docstrings and comments for all key Python backend models, endpoint routers, and service layers (DataMasker, AutoDetection).
-- [ ] **DOC-07**: Write descriptive TypeScript comments and component descriptions for React pages (App, AuditDashboard) and Axios api helpers.
+- [ ] **SEC-07**: Configure rate limiting on authentication routes (login, register) and data upload/masking routes.
+- [ ] **SEC-08**: Harden input validation for incoming CSV/XLSX file uploads (strict 50MB payload limits, MIME-type and extension validation).
+- [ ] **SEC-09**: Restrict access to the dashboard and audit log endpoints to users with authorized roles.
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Saving raw uploads for auditing | Excluded to guarantee compliance with privacy regulations (never store raw PII). |
+| Custom encryption for tokens | Standard cryptographic libraries (PyJWT) are more secure and easier to audit. |
+| Redis-backed distributed rate limiting | In-memory is sufficient for this single-instance local application; Redis can be configured as a future enhancement. |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DOC-01 | Phase 5 | Pending |
-| DOC-02 | Phase 5 | Pending |
-| DOC-03 | Phase 5 | Pending |
-| DOC-04 | Phase 5 | Pending |
-| DOC-05 | Phase 5 | Pending |
-| DOC-06 | Phase 5 | Pending |
-| DOC-07 | Phase 5 | Pending |
+| SEC-01 | Phase 6 | Pending |
+| SEC-02 | Phase 6 | Pending |
+| SEC-03 | Phase 6 | Pending |
+| SEC-04 | Phase 6 | Pending |
+| SEC-05 | Phase 6 | Pending |
+| SEC-06 | Phase 7 | Pending |
+| SEC-07 | Phase 7 | Pending |
+| SEC-08 | Phase 8 | Pending |
+| SEC-09 | Phase 8 | Pending |
 
 **Coverage:**
-- Active requirements: 7 total
-- Mapped to phases: 7
+- v3 requirements: 9 total
+- Mapped to phases: 9
 - Unmapped: 0 ✓
 
 ---
