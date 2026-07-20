@@ -1,83 +1,38 @@
 # Technology Stack
 
-**Analysis Date:** 2026-07-20
+**Mapped Date:** 2026-07-20
 
-## Languages
+## Languages & Runtimes
 
-**Primary:**
-- Python 3.11+ (currently running 3.11.14 in virtualenv) - Backend application code, services, and APIs
-- TypeScript 5.x - Frontend application code (React components, state, API calls)
+- **Python 3.11+** (`backend/pyproject.toml`) - High-performance backend application runtime.
+- **TypeScript 5.x** (`frontend/package.json`) - Typed frontend UI application logic.
+- **Node.js 20.x/22.x** - Development runtime and frontend Vite build tool.
+- **SQL** - Database schema definition and data persistence via SQLModel.
 
-**Secondary:**
-- JavaScript - Build and configuration tooling (Vite, PostCSS, Tailwind, ESLint)
-- SQL - Database migrations and schema definitions
+## Frameworks & Build Tools
 
-## Runtime
+- **FastAPI 0.110+** (`backend/app/main.py`) - High-performance async Python backend framework.
+- **React 18.3+** (`frontend/src/App.tsx`) - Modern UI component library.
+- **Vite 5.x** (`frontend/vite.config.ts`) - Fast frontend build tool & development server.
+- **TailwindCSS 3.4+** (`frontend/tailwind.config.js`) - Utility-first CSS styling framework.
 
-**Environment:**
-- Python 3.11+ (Backend)
-- Node.js 20.x (Frontend development and build)
-- Browser runtime (Google Chrome, Firefox, Safari)
+## Core Backend Dependencies
 
-**Package Manager:**
-- uv / pip / poetry - Python backend package management (`uv.lock` and `pyproject.toml` present)
-- npm 10.x - Node.js frontend package management (`package-lock.json` present)
+- **Pandas 2.2+** (`backend/app/services/parser.py`) - Tabular data manipulation and CSV/XLSX parsing.
+- **openpyxl 3.1+** - Excel (.xlsx) read/write engine for Pandas.
+- **SQLModel 0.0.39** (`backend/app/db.py`) - Unified SQLAlchemy ORM & Pydantic data modeling.
+- **Faker 40.31+** (`backend/app/services/masker.py`) - Realistic synthetic data generation.
+- **Cryptography 49.0+** (`backend/app/services/reversion.py`) - Fernet symmetric encryption for reversion keys.
+- **PyJWT & Passlib / bcrypt** (`backend/app/services/auth.py`) - Secure password hashing & JWT token generation.
+- **slowapi 0.1.9** (`backend/app/core/limiter.py`) - Rate-limiting middleware for auth endpoints.
+- **psycopg2-binary 2.9+** - PostgreSQL database driver for production environment.
 
-## Frameworks
+## Core Frontend Dependencies
 
-**Core:**
-- FastAPI 0.110+ - High-performance Python backend framework
-- React 18.x - Modern frontend UI library
-- Vite 5.x - Frontend build tool and development server
+- **Axios 1.6+** (`frontend/src/api/client.ts`) - HTTP client with CSRF header interceptor and 401 handling.
+- **lucide-react** (`frontend/src/components/`) - Modern iconography.
 
-**Testing:**
-- Pytest 9.x - Python backend unit and integration testing
-- Vitest - React frontend unit and component testing
+## Testing & Quality Assurance
 
-**Build/Dev:**
-- TailwindCSS 3.x - Utility-first CSS framework for interface styling
-- Oxlint - High-performance JavaScript/TypeScript linter
-- PostCSS & Autoprefixer - CSS preprocessing
-
-## Key Dependencies
-
-**Critical:**
-- pandas 3.0+ - Data manipulation and analysis (CSV/XLSX processing)
-- openpyxl 3.1+ - Engine for reading and writing Excel (.xlsx) files
-- Faker 40.x - Generating mock/synthetic data for masking
-- SQLModel 0.0.39 - ORM for SQL database access (combines SQLAlchemy and Pydantic)
-- PyJWT 2.13.0 - JSON Web Token implementation for authentication
-
-**Infrastructure:**
-- passlib 1.7.4 (with bcrypt) - Secure password hashing
-- slowapi 0.1.10 - Rate limiting extension for FastAPI
-- axios 1.6.8 - HTTP client for API communication
-- lucide-react 0.363.0 - Modern icons for frontend UI
-
-## Configuration
-
-**Environment:**
-- `.env` files for both backend and frontend environments
-- Keys: `DATABASE_URL`, `JWT_SECRET_KEY`, `CORS_ALLOWED_ORIGINS`
-
-**Build:**
-- `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json` - TypeScript compiler options
-- `vite.config.ts` - Vite bundler settings
-- `tailwind.config.js`, `postcss.config.js` - Tailwind and PostCSS configurations
-- `pyproject.toml`, `uv.lock` - Python dependency declarations
-
-## Platform Requirements
-
-**Development:**
-- Cross-platform (Windows, macOS, Linux)
-- Docker - Optional local database containerization (e.g., PostgreSQL)
-
-**Production:**
-- Vercel/Netlify for Frontend SPA
-- Docker Container / AWS ECS / Railway / Render for FastAPI Backend
-- PostgreSQL or SQLite for persistent data
-
----
-
-*Stack analysis: 2026-07-20*
-*Update after major dependency changes*
+- **pytest 9.1+** (`backend/app/tests/`) - Comprehensive backend unit and endpoint integration testing suite.
+- **Node Test Runner** (`frontend/src/utils/formatError.test.js`) - Native Node 22 test runner for frontend utility validation.

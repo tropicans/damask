@@ -1,77 +1,48 @@
-# Coding Conventions
+# Coding Conventions & Development Guidelines
 
-**Analysis Date:** 2026-07-20
+**Mapped Date:** 2026-07-20
 
-## Naming Patterns
+## Naming Conventions
 
-### Files
-- **Backend:** `snake_case.py` for all modules, controllers, models, and services (e.g., `auth_service.py`, `process_file()`).
-- **Frontend Components:** `PascalCase.tsx` / `PascalCase.ts` for React UI components (e.g., `LoginPage.tsx`, `ToastNotification.tsx`).
-- **Frontend Utilities:** `camelCase.ts` for hooks and scripts (e.g., `useAuth.ts`).
-- **Configurations:** `kebab-case.*` for tool and environment config files (e.g., `vite.config.ts`, `tailwind.config.js`).
+### Python Backend
+- **Modules & Files:** `snake_case` (`auth_service.py`, `masker.py`, `db.py`)
+- **Classes:** `PascalCase` (`User`, `MaskingJob`, `FakeNameStrategy`)
+- **Functions & Methods:** `snake_case` (`hash_password()`, `verify_password()`, `record_failed_attempt()`)
+- **Constants:** `UPPER_SNAKE_CASE` (`MAX_FILE_SIZE_MB = 50`, `INVITE_EXPIRE_HOURS = 24`)
 
-### Functions & Methods
-- **Backend (Python):** `snake_case` for all function and method names (e.g., `get_db_session()`, `verify_password()`).
-- **Frontend (TS/JS):** `camelCase` for functions (e.g., `fetchPreviewData()`, `handleUpload()`).
+### TypeScript / React Frontend
+- **React Components:** `PascalCase` (`App.tsx`, `AuthForm.tsx`, `AuditDashboard.tsx`)
+- **Utilities & API Client Modules:** `camelCase` / `kebab-case` (`formatError.ts`, `client.ts`, `auth.ts`)
+- **Functions & Hooks:** `camelCase` (`getCurrentUser()`, `extractErrorMessage()`, `handleAuthSuccess()`)
+- **Interfaces & Types:** `PascalCase` (`UserResponse`, `InviteResponse`, `PasswordStrength`)
 
-### Variables & Constants
-- **Variables:** `snake_case` in Python, `camelCase` in TS/JS.
-- **Constants:** `UPPER_SNAKE_CASE` (e.g., `MAX_FILE_SIZE_MB = 50`, `ACCESS_TOKEN_EXPIRE_MINUTES`).
+## Code Style & Formatting Rules
 
-### Classes & Types
-- **Classes:** `PascalCase` in both Python and TS/JS (e.g., `DataMasker`, `UserAuth`).
-- **TypeScript Interfaces/Types:** `PascalCase` with explicit property declarations; avoid using `any` type.
-
-## Code Style
-
-### Python (Backend)
+### Python
 - Follow PEP 8 guidelines.
-- Use Black format (line length 88 or 100 characters).
-- Type hints are required on all function parameters and return values (e.g., `def mask_data(df: pd.DataFrame, rules: dict) -> bytes:`).
+- Mandatory type hints on function arguments and return values (`def hash_password(password: str) -> str:`).
+- Document docstrings describing purpose, arguments, and return types for all endpoints and service functions.
 
-### TypeScript/React (Frontend)
-- Prettier auto-formatting (2-space tabs, single quotes, trailing commas, semicolons).
-- ESLint with TypeScript recommendation rules enabled.
+### TypeScript / React
+- Functional React components with hooks.
+- Explicit TypeScript interface/type definitions for all API request and response bodies.
+- Prettier auto-formatting (2 spaces, single quotes).
+- Safe error text handling: Use `extractErrorMessage(err)` when catching Axios errors before passing error messages to React state to prevent `Objects are not valid as a React child` crashes on FastAPI 422 validation objects.
 
-## Import Organization
+## Error Handling & Exception Management
 
-### Python (Backend)
-Group imports with a single blank line between groups in the following order:
-1. Standard library imports (e.g. `import io`, `import logging`).
-2. Third-party library imports (e.g. `from fastapi import APIRouter`, `import pandas as pd`).
-3. Local application imports (e.g. `from app.core.config import settings`).
+### Backend
+- Use FastAPI `HTTPException` with explicit HTTP status codes (e.g., 400 Bad Request, 401 Unauthorized, 403 Forbidden, 422 Unprocessable Entity, 423 Locked).
+- Catch custom domain exceptions (`AuthException`) with custom exception handlers in `backend/app/main.py`.
+- Delete session cookie (`secure_data_session`) automatically when responding with 401 Unauthorized.
 
-### TypeScript/React (Frontend)
-Group imports in the following order:
-1. React core, hooks, and React-related library packages.
-2. Third-party package imports (e.g. `axios`, `lucide-react`).
-3. Local component, hooks, and api imports.
-4. Stylesheets and asset imports.
+### Frontend
+- Global Axios response interceptor in `frontend/src/api/client.ts` triggers a global 401 callback to reset user state to `null`.
+- Display user-friendly error banners with `extractErrorMessage()` parsing.
 
-## Error Handling
+## Logging Practices
 
-### Backend (Python)
-- Use FastAPI `HTTPException` for standard API responses (e.g., 400 Bad Request, 401 Unauthorized, 403 Forbidden).
-- Wrap file-handling operations in try/except blocks and raise custom service-level exceptions (e.g., `FileProcessingError`) to prevent raw pandas or SQLAlchemy errors from escaping.
-- Return structured error JSON models containing descriptive user error messages.
-
-### Frontend (React)
-- Wrap API calls in try-catch structures inside hooks or controller functions.
-- Catch API errors and display elegant Toast UI notices or alert states, rather than crashing the page flow.
-- Use React error boundaries where appropriate to isolate rendering failures.
-
-## Logging
-
-### Framework
-- Python standard `logging` library configured in `app/core/logging.py`.
-- Output is sent to standard stdout/stderr streams.
-
-### Patterns
-- Log incoming masking jobs (size, row count, column mappings) at `INFO` level.
-- Log parsing errors or file upload failures at `ERROR` level with full stack trace.
-- Never write console logs or raw `print` statements in production code.
-
----
-
-*Convention analysis: 2026-07-20*
-*Update when patterns change*
+- Use Python standard `logging` library configured via `app.core.logging.setup_logging()`.
+- Log incoming masking jobs, invite creations, and user status changes at `INFO` level.
+- Log failed authentication attempts and security lockouts at `WARNING` or `INFO` level with client IP addresses.
+- Avoid using `print()` statements in backend production code.
