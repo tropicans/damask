@@ -9,9 +9,9 @@
 
 ### User Management (PROD)
 
-- [ ] **PROD-01**: Admin dapat melihat daftar semua registered users (nama, email, role, status aktif/non-aktif) melalui halaman admin UI.
-- [ ] **PROD-02**: Admin dapat mengubah role user (promote ke admin/auditor atau demote ke user biasa) melalui tombol aksi di halaman admin UI.
-- [ ] **PROD-03**: Admin dapat menonaktifkan (deactivate) akun user sehingga user tersebut tidak dapat login lagi hingga diaktifkan kembali.
+- [x] **PROD-01**: Admin dapat melihat daftar semua registered users (nama, email, role, status aktif/non-aktif) melalui halaman admin UI.
+- [x] **PROD-02**: Admin dapat mengubah role user (promote ke admin/auditor atau demote ke user biasa) melalui tombol aksi di halaman admin UI.
+- [x] **PROD-03**: Admin dapat menonaktifkan (deactivate) akun user sehingga user tersebut tidak dapat login lagi hingga diaktifkan kembali.
 - [x] **PROD-04**: User registration memerlukan invite link/code yang valid yang dibuat oleh admin; registrasi langsung tanpa invite ditolak.
 - [x] **PROD-05**: Admin dapat membuat invite link sekali pakai dengan batas waktu kedaluwarsa yang dapat dikonfigurasi (default: 48 jam).
 
@@ -32,8 +32,8 @@
 
 ### Audit Trail Enhancement (PROD)
 
-- [ ] **PROD-12**: Setiap login berhasil dan gagal dicatat ke database (user_id atau email, timestamp, IP address, user agent, dan status success/failed).
-- [ ] **PROD-13**: Admin dapat melihat riwayat login (login history) dan upaya login gagal (failed attempts) di halaman Audit Dashboard.
+- [x] **PROD-12**: Setiap login berhasil dan gagal dicatat ke database (user_id atau email, timestamp, IP address, user agent, dan status success/failed).
+- [x] **PROD-13**: Admin dapat melihat riwayat login (login history) dan upaya login gagal (failed attempts) di halaman Audit Dashboard.
 - [x] **PROD-14**: Akun user otomatis dikunci sementara (lock 15 menit) setelah 5 kali gagal login berturut-turut dari IP yang sama.
 
 ---
@@ -61,9 +61,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PROD-01 | Phase 12 | Pending |
-| PROD-02 | Phase 12 | Pending |
-| PROD-03 | Phase 12 | Pending |
+| PROD-01 | Phase 12 | Complete |
+| PROD-02 | Phase 12 | Complete |
+| PROD-03 | Phase 12 | Complete |
 | PROD-04 | Phase 11 | Complete |
 | PROD-05 | Phase 11 | Complete |
 | PROD-06 | Phase 11 | Complete |
@@ -72,8 +72,8 @@
 | PROD-09 | Phase 13 | Pending |
 | PROD-10 | Phase 14 | Pending |
 | PROD-11 | Phase 14 | Pending |
-| PROD-12 | Phase 12 | Pending |
-| PROD-13 | Phase 12 | Pending |
+| PROD-12 | Phase 12 | Complete |
+| PROD-13 | Phase 12 | Complete |
 | PROD-14 | Phase 11 | Complete |
 
 **Coverage:**

@@ -49,7 +49,10 @@ Previous milestones archived in `.planning/milestones/`.
   2. Admin dapat mengubah role user atau menonaktifkan akun melalui tombol aksi di UI.
   3. Setiap event login berhasil dan gagal dicatat ke DB (timestamp, IP, user agent, status).
   4. Audit Dashboard menampilkan tab "Login History" dan "Failed Attempts" untuk admin.
-- **Plans**: 3 plans (Planned)
+- **Plans**: 3/3 plans executed
+- [x] 12-01-PLAN.md
+- [x] 12-02-PLAN.md
+- [x] 12-03-PLAN.md
 
 #### Phase 13: PostgreSQL Migration
 
@@ -91,8 +94,8 @@ Previous milestones archived in `.planning/milestones/`.
 | 8. Input & Role Security | v3.0 | 2/2 | Complete | 2026-07-19 |
 | 9. Reversion Key & Backend | v4.0 | 3/3 | Complete | 2026-07-19 |
 | 10. Revert UI & Auditing | v4.0 | 3/3 | Complete | 2026-07-19 |
-| 11. Auth Policy & Invite Reg | v5.0 | 0/3 | Planned | — |
-| 12. User Management & Audit Trail | v5.0 | 0/3 | Planned | — |
+| 11. Auth Policy & Invite Reg | v5.0 | 3/3 | Complete | 2026-07-20 |
+| 12. User Management & Audit Trail | v5.0 | 3/3 | Complete | 2026-07-20 |
 | 13. PostgreSQL Migration | v5.0 | 0/2 | Planned | — |
 | 14. HTTPS & Deployment Guide | v5.0 | 0/2 | Planned | — |
 
