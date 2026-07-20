@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { ShieldCheck, Trash2, Loader2, Download, AlertCircle, LogOut, User as UserIcon, CheckCircle2, AlertTriangle, UploadCloud, X, FileText, Lock } from 'lucide-react';
+import { ShieldCheck, Trash2, Loader2, Download, AlertCircle, LogOut, User as UserIcon, CheckCircle2, AlertTriangle, UploadCloud, X, FileText, Lock, UserPlus } from 'lucide-react';
 import { Dropzone } from './components/Dropzone';
 import { PreviewTable } from './components/PreviewTable';
 import { uploadFileForPreview } from './api/preview';
 import type { PreviewResponse } from './api/preview';
 import { maskFile, revertFile } from './api/mask';
 import { AuthForm } from './components/AuthForm';
-import { getCurrentUser, logoutUser, type UserResponse } from './api/auth';
+import { getCurrentUser, logoutUser, createInvite, type UserResponse } from './api/auth';
 import { registerUnauthorizedCallback } from './api/client';
 import { AuditDashboard } from './components/AuditDashboard';
 
@@ -18,6 +18,12 @@ function App() {
   const [user, setUser] = useState<UserResponse | null>(null);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [activeTab, setActiveTab] = useState<'masking' | 'revert' | 'audit'>('masking');
+
+  // Invite States
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteCopied, setInviteCopied] = useState(false);
 
   // Active File States
   const [file, setFile] = useState<File | null>(null);
@@ -80,6 +86,19 @@ function App() {
     setUser(null);
     setActiveTab('masking');
     handleClear();
+  };
+
+  const handleCreateInvite = async () => {
+    setInviteLoading(true);
+    try {
+      const result = await createInvite();
+      setInviteUrl(result.invite_url);
+      setShowInviteModal(true);
+    } catch (err: any) {
+      console.error('Failed to create invite:', err);
+    } finally {
+      setInviteLoading(false);
+    }
   };
 
   /**
@@ -286,6 +305,17 @@ function App() {
           )}
 
           <div className="flex items-center gap-4">
+            {user?.role === 'admin' && (
+              <button
+                onClick={handleCreateInvite}
+                disabled={inviteLoading}
+                className="px-3 py-1.5 text-xs font-semibold bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-600/40 text-emerald-400 rounded-lg transition-all duration-200 flex items-center gap-1.5"
+                title="Buat tautan undangan untuk user baru"
+              >
+                <UserPlus size={14} />
+                {inviteLoading ? 'Membuat...' : 'Undang User'}
+              </button>
+            )}
             <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs font-semibold text-slate-300">
               <UserIcon size={14} className="text-indigo-400" />
               <span>{user.username}</span>
@@ -619,6 +649,54 @@ function App() {
       <footer className="border-t border-slate-900 py-6 text-center text-xs text-slate-600 bg-slate-950/20">
         <p>© 2026 SecureData Web. Diproses strictly di RAM untuk menjamin kepatuhan data.</p>
       </footer>
+
+      {showInviteModal && inviteUrl && (
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => { setShowInviteModal(false); setInviteCopied(false); }}
+        >
+          <div
+            className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-slate-100 font-bold text-lg mb-2 flex items-center gap-2">
+              <UserPlus size={20} className="text-emerald-400" />
+              Tautan Undangan Dibuat
+            </h3>
+            <p className="text-slate-400 text-sm mb-4">
+              Bagikan tautan berikut kepada pengguna yang ingin didaftarkan. Tautan ini hanya dapat digunakan sekali dan berlaku selama 48 jam.
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                readOnly
+                value={inviteUrl}
+                className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono outline-none"
+              />
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(inviteUrl);
+                  setInviteCopied(true);
+                  setTimeout(() => setInviteCopied(false), 2000);
+                }}
+                className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition-colors"
+              >
+                {inviteCopied ? '✓ Disalin' : 'Salin'}
+              </button>
+            </div>
+            <p className="text-amber-500/80 text-[11px] mt-3 flex items-start gap-1.5">
+              <span>⚠</span>
+              Simpan tautan ini dengan aman. Siapa pun yang memiliki tautan ini dapat mendaftar sebagai pengguna baru.
+            </p>
+            <button
+              onClick={() => { setShowInviteModal(false); setInviteCopied(false); }}
+              className="mt-4 w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm rounded-lg transition-colors"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

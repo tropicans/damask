@@ -1,11 +1,29 @@
-import { useState } from 'react';
-import { ShieldCheck, Loader2, AlertCircle, User, Mail, Lock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ShieldCheck, Loader2, AlertCircle, User, Mail, Lock, CheckCircle2 } from 'lucide-react';
 import { loginUser, registerUser, type UserResponse } from '../api/auth';
 
 interface AuthFormProps {
   /** Callback fired on successful registration or login, providing user object. */
   onAuthSuccess: (user: UserResponse) => void;
 }
+
+interface PasswordStrength {
+  level: 'empty' | 'lemah' | 'sedang' | 'kuat';
+  score: number; // 0-4 criteria met
+  label: string;
+}
+
+const calculatePasswordStrength = (password: string): PasswordStrength => {
+  if (!password) return { level: 'empty', score: 0, label: '' };
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[a-z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (score <= 1) return { level: 'lemah', score, label: 'Lemah' };
+  if (score <= 3) return { level: 'sedang', score, label: 'Sedang' };
+  return { level: 'kuat', score, label: 'Kuat' };
+};
 
 /**
  * AuthForm component rendering Login and Registration tabs.
@@ -18,6 +36,17 @@ export const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
+  const [hasTypedPassword, setHasTypedPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({ level: 'empty', score: 0, label: '' });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('invite');
+    if (token) {
+      setInviteToken(token);
+    }
+  }, []);
 
   /**
    * Handles form submit. Performs local validations and authenticates via API helper.
@@ -39,6 +68,10 @@ export const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
       setError('Nama pengguna wajib diisi.');
       return;
     }
+    if (!isLogin && !inviteToken) {
+      setError('Pendaftaran memerlukan kode undangan yang valid.');
+      return;
+    }
 
     setIsLoading(true);
 
@@ -48,7 +81,7 @@ export const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
         onAuthSuccess(user);
       } else {
         // Register first
-        await registerUser(username, email, password);
+        await registerUser(username, email, password, inviteToken);
         // Login immediately after registration
         const user = await loginUser(email, password);
         onAuthSuccess(user);
@@ -123,6 +156,13 @@ export const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
           </div>
         )}
 
+        {!isLogin && inviteToken && (
+          <div className="mb-5 p-3 bg-emerald-950/40 border border-emerald-900/60 rounded-xl flex items-center gap-2 text-emerald-400 text-xs">
+            <CheckCircle2 size={16} className="shrink-0" />
+            <span>Kode undangan valid ✓</span>
+          </div>
+        )}
+
         {/* Input Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
@@ -176,12 +216,42 @@ export const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setHasTypedPassword(true);
+                  setPasswordStrength(calculatePasswordStrength(e.target.value));
+                }}
                 placeholder="••••••••"
                 className="w-full bg-slate-950/80 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-600 outline-none transition-all duration-200"
                 disabled={isLoading}
               />
             </div>
+            {!isLogin && hasTypedPassword && passwordStrength.level !== 'empty' && (
+              <div className="mt-2">
+                <div className="flex gap-1 mb-1">
+                  {[1, 2, 3].map((seg) => (
+                    <div
+                      key={seg}
+                      className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                        passwordStrength.level === 'lemah' && seg === 1
+                          ? 'bg-red-500'
+                          : passwordStrength.level === 'sedang' && seg <= 2
+                          ? 'bg-yellow-500'
+                          : passwordStrength.level === 'kuat'
+                          ? 'bg-emerald-500'
+                          : 'bg-slate-700'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <p className={`text-[10px] font-semibold ${
+                  passwordStrength.level === 'lemah' ? 'text-red-400' :
+                  passwordStrength.level === 'sedang' ? 'text-yellow-400' : 'text-emerald-400'
+                }`}>
+                  Kekuatan Kata Sandi: {passwordStrength.label}
+                </p>
+              </div>
+            )}
             <p className="text-[10px] text-slate-500 mt-2 font-medium">
               * Minimal 8 karakter
             </p>
