@@ -23,7 +23,7 @@
 ### Database Migration (PROD)
 
 - [x] **PROD-08**: Backend mendukung PostgreSQL sebagai database primary dengan konfigurasi `DATABASE_URL` di `.env`.
-- [ ] **PROD-09**: Docker Compose production profile (`docker-compose.prod.yml`) menyertakan service PostgreSQL dengan volume persisten dan health check.
+- [x] **PROD-09**: Docker Compose production profile (`docker-compose.prod.yml`) menyertakan service PostgreSQL dengan volume persisten dan health check.
 
 ### Deployment & HTTPS (PROD)
 
@@ -69,7 +69,7 @@
 | PROD-06 | Phase 11 | Complete |
 | PROD-07 | Phase 11 | Complete |
 | PROD-08 | Phase 13 | Complete |
-| PROD-09 | Phase 13 | Pending |
+| PROD-09 | Phase 13 | Complete |
 | PROD-10 | Phase 14 | Pending |
 | PROD-11 | Phase 14 | Pending |
 | PROD-12 | Phase 12 | Complete |

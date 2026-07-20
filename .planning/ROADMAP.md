@@ -64,9 +64,9 @@ Previous milestones archived in `.planning/milestones/`.
   2. `docker-compose.prod.yml` menyertakan PostgreSQL service dengan volume persisten dan health check.
   3. Semua 35+ backend tests passing dengan PostgreSQL sebagai database.
   4. SQLite tetap digunakan untuk development (`.env.example` mendokumentasikan keduanya).
-- **Plans**: 1/2 plans executed
+- **Plans**: 2/2 plans executed
 - [x] 13-01-PLAN.md
-- [ ] 13-02-PLAN.md
+- [x] 13-02-PLAN.md
 
 #### Phase 14: HTTPS & Production Deployment Guide
 
@@ -98,8 +98,9 @@ Previous milestones archived in `.planning/milestones/`.
 | 10. Revert UI & Auditing | v4.0 | 3/3 | Complete | 2026-07-19 |
 | 11. Auth Policy & Invite Reg | v5.0 | 3/3 | Complete | 2026-07-20 |
 | 12. User Management & Audit Trail | v5.0 | 3/3 | Complete | 2026-07-20 |
-| 13. PostgreSQL Migration | v5.0 | 0/2 | Planned | — |
+| 13. PostgreSQL Migration | v5.0 | 2/2 | Complete | 2026-07-20 |
 | 14. HTTPS & Deployment Guide | v5.0 | 0/2 | Planned | — |
 
 ---
-*Roadmap updated: 2026-07-19*
+*Roadmap updated: 2026-07-20*
+
