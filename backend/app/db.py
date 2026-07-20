@@ -67,6 +67,30 @@ def init_db() -> None:
     from app.models.job import MaskingJob, JobDetail, RevertJob  # noqa
     SQLModel.metadata.create_all(engine)
 
+    # Auto-seed initial admin and user if database is empty
+    with Session(engine) as session:
+        from sqlmodel import select
+        from app.services.auth import hash_password
+        existing_user = session.exec(select(User)).first()
+        if not existing_user:
+            logger.info("Empty database detected. Seeding default admin and user accounts...")
+            admin = User(
+                username="admin",
+                email="admin@securedata.com",
+                password_hash=hash_password("AdminPass1"),
+                role="admin"
+            )
+            user = User(
+                username="user",
+                email="user@securedata.com",
+                password_hash=hash_password("UserPass1"),
+                role="user"
+            )
+            session.add(admin)
+            session.add(user)
+            session.commit()
+            logger.info("Default admin and user accounts created successfully.")
+
 
 def get_session():
     """

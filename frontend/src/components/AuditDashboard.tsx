@@ -27,6 +27,7 @@ import {
 } from '../api/jobs';
 import type { UserResponse } from '../api/auth';
 import { getLoginAudits, type LoginAuditResponse } from '../api/admin';
+import { extractErrorMessage } from '../utils/formatError';
 
 /**
  * AuditDashboard component providing administrative users with compliance summaries
@@ -103,7 +104,7 @@ export function AuditDashboard({ user }: { user: UserResponse }) {
       setStats(statsData);
     } catch (err: any) {
       console.error(err);
-      setError(err.response?.data?.detail || 'Gagal memuat data riwayat audit.');
+      setError(extractErrorMessage(err, 'Gagal memuat data riwayat audit.'));
     } finally {
       setIsLoading(false);
     }

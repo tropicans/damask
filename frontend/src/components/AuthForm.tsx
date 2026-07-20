@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ShieldCheck, Loader2, AlertCircle, User, Mail, Lock, CheckCircle2 } from 'lucide-react';
 import { loginUser, registerUser, type UserResponse } from '../api/auth';
+import { extractErrorMessage } from '../utils/formatError';
 
 interface AuthFormProps {
   /** Callback fired on successful registration or login, providing user object. */
@@ -88,7 +89,7 @@ export const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
       }
     } catch (err: any) {
       console.error(err);
-      const msg = err.response?.data?.detail || 'Terjadi kesalahan sistem. Silakan coba lagi.';
+      const msg = extractErrorMessage(err, 'Terjadi kesalahan sistem. Silakan coba lagi.');
       setError(msg);
     } finally {
       setIsLoading(false);
@@ -151,7 +152,13 @@ export const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
             <AlertCircle className="shrink-0 mt-0.5" size={18} />
             <div>
               <p className="font-semibold">Terjadi Masalah</p>
-              <p className="text-xs text-red-300/90 mt-0.5 leading-relaxed">{error}</p>
+              <p className="text-xs text-red-300/90 mt-0.5 leading-relaxed">
+                {typeof error === 'string'
+                  ? error
+                  : Array.isArray(error)
+                  ? (error as any[]).map((e) => (typeof e === 'object' ? e?.msg || JSON.stringify(e) : String(e))).join('. ')
+                  : String(error)}
+              </p>
             </div>
           </div>
         )}
@@ -199,6 +206,7 @@ export const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nama@perusahaan.com"
+                autoComplete="email"
                 className="w-full bg-slate-950/80 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-600 outline-none transition-all duration-200"
                 disabled={isLoading}
               />
@@ -222,6 +230,7 @@ export const AuthForm = ({ onAuthSuccess }: AuthFormProps) => {
                   setPasswordStrength(calculatePasswordStrength(e.target.value));
                 }}
                 placeholder="••••••••"
+                autoComplete={isLogin ? 'current-password' : 'new-password'}
                 className="w-full bg-slate-950/80 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-600 outline-none transition-all duration-200"
                 disabled={isLoading}
               />

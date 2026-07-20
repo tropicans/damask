@@ -58,8 +58,11 @@ function App() {
       try {
         const userData = await getCurrentUser();
         setUser(userData);
-      } catch (err) {
-        console.error("Token verification failed:", err);
+      } catch (err: any) {
+        // 401 is expected when the user is not logged in yet
+        if (err.response?.status !== 401) {
+          console.error("Token verification failed:", err);
+        }
         setUser(null);
       } finally {
         setIsCheckingSession(false);

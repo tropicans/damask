@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { getUsers, updateUserStatus, updateUserRole } from '../api/admin';
 import type { UserResponse } from '../api/auth';
+import { extractErrorMessage } from '../utils/formatError';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -102,7 +103,7 @@ export function UserManagement() {
       setTotal(res.total);
     } catch (err: any) {
       console.error(err);
-      setError(err.response?.data?.detail || 'Gagal memuat daftar pengguna.');
+      setError(extractErrorMessage(err, 'Gagal memuat daftar pengguna.'));
     } finally {
       setIsLoading(false);
     }
@@ -129,7 +130,7 @@ export function UserManagement() {
           await updateUserStatus(user.id, nextStatus);
           await fetchUsers();
         } catch (err: any) {
-          setError(err.response?.data?.detail || 'Gagal mengubah status pengguna.');
+          setError(extractErrorMessage(err, 'Gagal mengubah status pengguna.'));
           setIsLoading(false);
         }
       }
@@ -151,7 +152,7 @@ export function UserManagement() {
           await updateUserRole(user.id, newRole);
           await fetchUsers();
         } catch (err: any) {
-          setError(err.response?.data?.detail || 'Gagal mengubah peran pengguna.');
+          setError(extractErrorMessage(err, 'Gagal mengubah peran pengguna.'));
           setIsLoading(false);
         }
       }
