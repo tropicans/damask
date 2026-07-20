@@ -1,31 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import SQLModel, create_engine, Session
-from sqlalchemy.pool import StaticPool
-from app.main import app
-from app.db import get_session
-
-@pytest.fixture(name="session")
-def session_fixture():
-    # Use an in-memory SQLite database with StaticPool to keep database alive in-memory
-    test_engine = create_engine(
-        "sqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool
-    )
-    SQLModel.metadata.create_all(test_engine)
-    with Session(test_engine) as session:
-        yield session
-    SQLModel.metadata.drop_all(test_engine)
-
-@pytest.fixture(name="client")
-def client_fixture(session: Session):
-    def get_session_override():
-        return session
-    app.dependency_overrides[get_session] = get_session_override
-    client = TestClient(app)
-    yield client
-    app.dependency_overrides.clear()
+from sqlmodel import Session
 
 def test_invalid_mime_type(client: TestClient, session: Session):
     from app.models.user import User
