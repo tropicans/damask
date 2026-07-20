@@ -26,7 +26,9 @@ class User(SQLModel, table=True):
     email: str = Field(unique=True, index=True, nullable=False)
     password_hash: str = Field(nullable=False)
     role: str = Field(default="user", nullable=False)
+    is_active: bool = Field(default=True, nullable=False)
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+
 
 
 class UserLogin(BaseModel):
@@ -45,6 +47,7 @@ class UserResponse(BaseModel):
     username: str
     email: EmailStr
     role: str
+    is_active: bool
     created_at: datetime
 
     class Config:
@@ -115,4 +118,47 @@ class InviteResponse(BaseModel):
     expires_at: datetime
     is_used: bool
     created_at: datetime
+
+
+class LoginAudit(SQLModel, table=True):
+    """
+    SQLModel representation of the 'login_audits' table.
+    Logs successful and failed authentication attempts.
+    """
+    __tablename__ = "login_audits"
+
+    id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        primary_key=True,
+        index=True,
+        nullable=False
+    )
+    email: str = Field(index=True, nullable=False)
+    user_id: Optional[str] = Field(
+        default=None,
+        foreign_key="users.id",
+        nullable=True,
+        ondelete="SET NULL"
+    )
+    ip_address: str = Field(nullable=False)
+    user_agent: Optional[str] = Field(default=None, nullable=True)
+    status: str = Field(nullable=False)  # "SUCCESS" or "FAILED"
+    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+
+
+class LoginAuditResponse(BaseModel):
+    """
+    Pydantic schema for login audit responses.
+    """
+    id: str
+    email: str
+    user_id: Optional[str]
+    ip_address: str
+    user_agent: Optional[str]
+    status: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
 

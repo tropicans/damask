@@ -25,14 +25,16 @@ import {
   type JobDetailResponse,
   type RevertJobResponse
 } from '../api/jobs';
+import type { UserResponse } from '../api/auth';
+import { getLoginAudits, type LoginAuditResponse } from '../api/admin';
 
 /**
  * AuditDashboard component providing administrative users with compliance summaries
  * and detailed metrics for previous execution runs of both Masking and Reversion.
  */
-export function AuditDashboard() {
-  const [subTab, setSubTab] = useState<'masking' | 'revert'>('masking');
-  const [jobs, setJobs] = useState<(MaskingJobResponse | RevertJobResponse)[]>([]);
+export function AuditDashboard({ user }: { user: UserResponse }) {
+  const [subTab, setSubTab] = useState<'masking' | 'revert' | 'login_success' | 'login_failed'>('masking');
+  const [jobs, setJobs] = useState<(MaskingJobResponse | RevertJobResponse | LoginAuditResponse)[]>([]);
   const [stats, setStats] = useState<JobStatsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,18 +58,38 @@ export function AuditDashboard() {
     setError(null);
     try {
       let jobsData: any[];
-      let statsData: JobStatsResponse;
+      let statsData: JobStatsResponse | null = null;
 
       if (subTab === 'masking') {
-        [jobsData, statsData] = await Promise.all([
-          getJobs(page * limit, limit + 1), // fetch limit + 1 to check if there is a next page
+        const [jd, sd] = await Promise.all([
+          getJobs(page * limit, limit + 1),
           getJobStats()
         ]);
-      } else {
-        [jobsData, statsData] = await Promise.all([
+        jobsData = jd;
+        statsData = sd;
+      } else if (subTab === 'revert') {
+        const [jd, sd] = await Promise.all([
           getRevertJobs(page * limit, limit + 1),
           getRevertJobStats()
         ]);
+        jobsData = jd;
+        statsData = sd;
+      } else if (subTab === 'login_success') {
+        const res = await getLoginAudits('SUCCESS', page + 1, limit);
+        jobsData = res.items;
+        setHasMore(res.total > (page + 1) * limit);
+        setJobs(jobsData);
+        setStats(null);
+        setIsLoading(false);
+        return;
+      } else {
+        const res = await getLoginAudits('FAILED', page + 1, limit);
+        jobsData = res.items;
+        setHasMore(res.total > (page + 1) * limit);
+        setJobs(jobsData);
+        setStats(null);
+        setIsLoading(false);
+        return;
       }
 
       if (jobsData.length > limit) {
@@ -97,7 +119,7 @@ export function AuditDashboard() {
   /**
    * Switches the active history sub-tab and resets pagination.
    */
-  const handleSubTabChange = (newTab: 'masking' | 'revert') => {
+  const handleSubTabChange = (newTab: 'masking' | 'revert' | 'login_success' | 'login_failed') => {
     setSubTab(newTab);
     setPage(0);
     setJobs([]);
@@ -207,6 +229,30 @@ export function AuditDashboard() {
         >
           Riwayat Reversion
         </button>
+        {user.role === 'admin' && (
+          <>
+            <button
+              onClick={() => handleSubTabChange('login_success')}
+              className={`pb-2.5 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all duration-200 ${
+                subTab === 'login_success'
+                  ? 'border-indigo-500 text-slate-100 font-bold'
+                  : 'border-transparent text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              Riwayat Login
+            </button>
+            <button
+              onClick={() => handleSubTabChange('login_failed')}
+              className={`pb-2.5 px-4 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all duration-200 ${
+                subTab === 'login_failed'
+                  ? 'border-indigo-500 text-slate-100 font-bold'
+                  : 'border-transparent text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              Percobaan Gagal
+            </button>
+          </>
+        )}
       </div>
 
       {/* Summary Cards */}
@@ -252,7 +298,9 @@ export function AuditDashboard() {
       <div className="bg-slate-900/30 border border-slate-900 rounded-xl shadow-2xl backdrop-blur-sm overflow-hidden">
         <div className="px-6 py-5 border-b border-slate-900">
           <h3 className="font-bold text-base text-slate-200">
-            {subTab === 'masking' ? "Riwayat Penyamaran Berkas" : "Riwayat Pemulihan Berkas"}
+            {subTab === 'masking' ? "Riwayat Penyamaran Berkas" : 
+             subTab === 'revert' ? "Riwayat Pemulihan Berkas" : 
+             subTab === 'login_success' ? "Riwayat Login Sukses" : "Riwayat Percobaan Login Gagal"}
           </h3>
           <p className="text-xs text-slate-500 mt-1">Daftar lengkap pengerjaan audit yang dilakukan secara lokal</p>
         </div>
@@ -263,7 +311,11 @@ export function AuditDashboard() {
             <p className="font-medium text-sm">
               {subTab === 'masking' 
                 ? "Belum ada riwayat pekerjaan penyamaran." 
-                : "Belum ada riwayat pekerjaan pemulihan data."}
+                : subTab === 'revert'
+                ? "Belum ada riwayat pekerjaan pemulihan data."
+                : subTab === 'login_success'
+                ? "Belum ada riwayat login sukses."
+                : "Belum ada riwayat percobaan login gagal."}
             </p>
           </div>
         ) : (
@@ -271,51 +323,89 @@ export function AuditDashboard() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-900/80 bg-slate-950/20 text-xs font-semibold text-slate-400 uppercase">
-                  <th className="px-6 py-4">Waktu</th>
-                  <th className="px-6 py-4">Nama Berkas</th>
-                  <th className="px-6 py-4">Ukuran</th>
-                  <th className="px-6 py-4">Jumlah Baris</th>
-                  {subTab === 'revert' && <th className="px-6 py-4">Durasi</th>}
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-right">Aksi</th>
+                  {subTab === 'login_success' || subTab === 'login_failed' ? (
+                    <>
+                      <th className="px-6 py-4">Waktu</th>
+                      <th className="px-6 py-4">Email</th>
+                      <th className="px-6 py-4">IP Address</th>
+                      <th className="px-6 py-4">User Agent</th>
+                      <th className="px-6 py-4">Status</th>
+                    </>
+                  ) : (
+                    <>
+                      <th className="px-6 py-4">Waktu</th>
+                      <th className="px-6 py-4">Nama Berkas</th>
+                      <th className="px-6 py-4">Ukuran</th>
+                      <th className="px-6 py-4">Jumlah Baris</th>
+                      {subTab === 'revert' && <th className="px-6 py-4">Durasi</th>}
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4 text-right">Aksi</th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-900/40 text-sm">
-                {jobs.map((job) => (
+                {jobs.map((job: any) => (
                   <tr key={job.id} className="hover:bg-slate-900/10 transition-colors duration-150">
-                    <td className="px-6 py-4 font-medium text-slate-300">{formatDate(job.created_at)}</td>
-                    <td className="px-6 py-4 font-semibold text-slate-200 truncate max-w-xs">{job.file_name}</td>
-                    <td className="px-6 py-4 text-slate-400">{formatSize(job.file_size_bytes)}</td>
-                    <td className="px-6 py-4 text-slate-400">
-                      {job.row_count !== null ? job.row_count.toLocaleString('id-ID') : '-'}
-                    </td>
-                    {subTab === 'revert' && (
-                      <td className="px-6 py-4 text-slate-400 font-medium">
-                        {'execution_duration_ms' in job ? `${job.execution_duration_ms} ms` : '-'}
-                      </td>
+                    {subTab === 'login_success' || subTab === 'login_failed' ? (
+                      <>
+                        <td className="px-6 py-4 font-medium text-slate-300">{formatDate(job.created_at)}</td>
+                        <td className="px-6 py-4 font-semibold text-slate-200">{job.email}</td>
+                        <td className="px-6 py-4 text-slate-400 font-mono text-xs">{job.ip_address}</td>
+                        <td className="px-6 py-4 text-slate-400 truncate max-w-xs" title={job.user_agent || ''}>
+                          {job.user_agent || '-'}
+                        </td>
+                        <td className="px-6 py-4">
+                          {job.status === 'SUCCESS' ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                              <CheckCircle2 size={12} />
+                              Sukses
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/10 border border-red-500/30 text-red-400">
+                              <XCircle size={12} />
+                              Gagal
+                            </span>
+                          )}
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="px-6 py-4 font-medium text-slate-300">{formatDate(job.created_at)}</td>
+                        <td className="px-6 py-4 font-semibold text-slate-200 truncate max-w-xs">{job.file_name}</td>
+                        <td className="px-6 py-4 text-slate-400">{formatSize(job.file_size_bytes)}</td>
+                        <td className="px-6 py-4 text-slate-400">
+                          {job.row_count !== null ? job.row_count.toLocaleString('id-ID') : '-'}
+                        </td>
+                        {subTab === 'revert' && (
+                          <td className="px-6 py-4 text-slate-400 font-medium">
+                            {'execution_duration_ms' in job ? `${job.execution_duration_ms} ms` : '-'}
+                          </td>
+                        )}
+                        <td className="px-6 py-4">
+                          {job.status === 'SUCCESS' ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                              <CheckCircle2 size={12} />
+                              Sukses
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/10 border border-red-500/30 text-red-400">
+                              <XCircle size={12} />
+                              Gagal
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            onClick={() => handleOpenDetails(job)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-indigo-400 border border-slate-800/80 transition-all duration-200"
+                          >
+                            <Info size={12} />
+                            Detail
+                          </button>
+                        </td>
+                      </>
                     )}
-                    <td className="px-6 py-4">
-                      {job.status === 'SUCCESS' ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
-                          <CheckCircle2 size={12} />
-                          Sukses
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/10 border border-red-500/30 text-red-400">
-                          <XCircle size={12} />
-                          Gagal
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => handleOpenDetails(job)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-indigo-400 border border-slate-800/80 transition-all duration-200"
-                      >
-                        <Info size={12} />
-                        Detail
-                      </button>
-                    </td>
                   </tr>
                 ))}
               </tbody>

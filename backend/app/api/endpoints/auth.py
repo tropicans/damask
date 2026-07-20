@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from sqlmodel import Session, select
 
 from app.db import get_session
-from app.models.user import User, UserRegister, UserLogin, UserResponse, Invite, InviteResponse
+from app.models.user import User, UserRegister, UserLogin, UserResponse, Invite, InviteResponse, LoginAudit
 from app.services.auth import (
     hash_password, verify_password, create_access_token, get_current_user,
     validate_password_policy, is_ip_locked, record_failed_attempt, clear_failed_attempts,
@@ -151,6 +151,19 @@ def register_user(
     session.add(invite)
     session.commit()
 
+    # Record successful login on registration since it sets cookie
+    client_ip = request.client.host if request.client else "unknown"
+    user_agent = request.headers.get("user-agent")
+    audit = LoginAudit(
+        email=user.email,
+        user_id=user.id,
+        ip_address=client_ip,
+        user_agent=user_agent,
+        status="SUCCESS"
+    )
+    session.add(audit)
+    session.commit()
+
     logger.info(f"New user registered: {user.email} via invite {invite.id}")
 
     access_token = create_access_token(user_id=user.id)
@@ -189,9 +202,19 @@ def login(
         UserResponse: The authenticated user profile details.
     """
     client_ip = request.client.host if request.client else "unknown"
+    user_agent = request.headers.get("user-agent")
 
     # Check lockout before processing credentials
     if is_ip_locked(client_ip):
+        audit = LoginAudit(
+            email=credentials.email,
+            user_id=None,
+            ip_address=client_ip,
+            user_agent=user_agent,
+            status="FAILED"
+        )
+        session.add(audit)
+        session.commit()
         raise HTTPException(
             status_code=status.HTTP_423_LOCKED,
             detail="Akun dikunci 15 menit karena terlalu banyak percobaan login. Silakan coba lagi nanti.",
@@ -202,14 +225,48 @@ def login(
 
     if not user or not verify_password(credentials.password, user.password_hash):
         record_failed_attempt(client_ip)
+        audit = LoginAudit(
+            email=credentials.email,
+            user_id=user.id if user else None,
+            ip_address=client_ip,
+            user_agent=user_agent,
+            status="FAILED"
+        )
+        session.add(audit)
+        session.commit()
         logger.warning(f"Failed login attempt for email={credentials.email} from IP={client_ip}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email atau kata sandi salah.",
         )
 
+    # Check if user is deactivated
+    if not user.is_active:
+        audit = LoginAudit(
+            email=credentials.email,
+            user_id=user.id,
+            ip_address=client_ip,
+            user_agent=user_agent,
+            status="FAILED"
+        )
+        session.add(audit)
+        session.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Akun Anda dinonaktifkan. Silakan hubungi admin.",
+        )
+
     # Successful login — clear lockout counter
     clear_failed_attempts(client_ip)
+    audit = LoginAudit(
+        email=credentials.email,
+        user_id=user.id,
+        ip_address=client_ip,
+        user_agent=user_agent,
+        status="SUCCESS"
+    )
+    session.add(audit)
+    session.commit()
     logger.info(f"User logged in: {user.email} from IP={client_ip}")
 
     access_token = create_access_token(user_id=user.id)

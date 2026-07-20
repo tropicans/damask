@@ -9,6 +9,7 @@ import { AuthForm } from './components/AuthForm';
 import { getCurrentUser, logoutUser, createInvite, type UserResponse } from './api/auth';
 import { registerUnauthorizedCallback } from './api/client';
 import { AuditDashboard } from './components/AuditDashboard';
+import { UserManagement } from './components/UserManagement';
 
 /**
  * Main application component. Manages authentication sessions, navigation tabs,
@@ -17,7 +18,7 @@ import { AuditDashboard } from './components/AuditDashboard';
 function App() {
   const [user, setUser] = useState<UserResponse | null>(null);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
-  const [activeTab, setActiveTab] = useState<'masking' | 'revert' | 'audit'>('masking');
+  const [activeTab, setActiveTab] = useState<'masking' | 'revert' | 'audit' | 'users'>('masking');
 
   // Invite States
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -299,6 +300,18 @@ function App() {
                   }`}
                 >
                   Riwayat Audit
+                </button>
+              )}
+              {user.role === 'admin' && (
+                <button
+                  onClick={() => setActiveTab('users')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
+                    activeTab === 'users'
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                  }`}
+                >
+                  Manajemen User
                 </button>
               )}
             </nav>
@@ -637,8 +650,10 @@ function App() {
               </div>
             </div>
           </div>
+        ) : activeTab === 'users' && user.role === 'admin' ? (
+          <UserManagement />
         ) : (user.role === 'admin' || user.role === 'auditor') ? (
-          <AuditDashboard />
+          <AuditDashboard user={user} />
         ) : (
           <div className="text-center py-12">
             <p className="text-red-400 font-semibold text-sm">Akses ditolak. Peran tidak sah.</p>

@@ -125,5 +125,7 @@ async def get_current_user(
     user = session.get(User, user_id)
     if user is None:
         raise AuthException("User tidak ditemukan.")
+    if not user.is_active:
+        raise AuthException("Akun Anda dinonaktifkan. Silakan hubungi admin.")
     return user
 
