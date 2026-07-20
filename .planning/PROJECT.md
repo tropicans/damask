@@ -10,7 +10,7 @@ Ensure sensitive data is masked safely and efficiently before it leaves the orga
 
 ## Current State
 
-- **Phases 11-13 (v5.0)**: Completed on 2026-07-20. Implemented password strength policy, invite-based registration, brute-force lockout, admin user management UI, login history audit logs, and PostgreSQL database migration support with Docker-Compose prod configs.
+- **v5.0 Production Readiness**: Completed on 2026-07-20. Hardened authentication policy, invite-based registration, account lockout, admin user management UI, login audits, PostgreSQL migration, and Nginx reverse proxy configurations.
 - **Total Tests**: 54 tests (all passing).
 
 ## Requirements
@@ -38,15 +38,24 @@ Ensure sensitive data is masked safely and efficiently before it leaves the orga
 - ✓ SEC-04: Harden input validation and tabular file parsing against malicious injection payloads — v3.0
 - ✓ SEC-05: Implement CSRF protection (Double Submit Cookie pattern) for state-changing requests — v3.0
 - ✓ SEC-06: Restrict dashboard access to authorized roles and secure audit log records — v3.0
-- ✓ PROD-01: Admin User Management UI — view all users, promote/demote role, deactivate accounts — Phase 12
-- ✓ PROD-02: Password Policy — minimum 8 chars with uppercase+digit, strength indicator in registration UI — Phase 11
-- ✓ PROD-03: PostgreSQL Migration — replace SQLite with PostgreSQL for concurrent multi-user writes — Phase 13
-- ✓ PROD-04: Invite-only Registration — admin generates invite link/code; registration requires valid invite — Phase 11
-- ✓ PROD-06: Audit Trail Enhancement — login history, failed login tracking, user activity log in admin dashboard — Phase 12
+- ✓ PROD-01: Admin User List UI — view all registered users in admin UI — Phase 12
+- ✓ PROD-02: Admin User Role Change — update role (promote/demote) in admin UI — Phase 12
+- ✓ PROD-03: Admin Deactivate User — deactivate accounts and block login — Phase 12
+- ✓ PROD-04: Invite-only Registration — user registration requires valid invite token — Phase 11
+- ✓ PROD-05: Admin Generate Invite Link — create one-time use invite tokens valid for 48 hours — Phase 11
+- ✓ PROD-06: Password Strength Policy — enforce password complexity rules (uppercase/digit/min 8 chars) — Phase 11
+- ✓ PROD-07: Registration Strength Indicator — real-time strength meter in UI — Phase 11
+- ✓ PROD-08: PostgreSQL Support — database support for PostgreSQL concurrent writes — Phase 13
+- ✓ PROD-09: Postgres docker-compose — production profile with persistent volume and healthcheck — Phase 13
+- ✓ PROD-10: Production Deployment Guide — bilingual docs for SSL/VPS setup and automated backups — Phase 14
+- ✓ PROD-11: Nginx Configuration template — reverse proxy upstream configuration template — Phase 14
+- ✓ PROD-12: Log login success/failure — record security events with IP and user agent in DB — Phase 12
+- ✓ PROD-13: Audit Dashboard Login Sub-tabs — admin views login history and failed attempts in dashboard — Phase 12
+- ✓ PROD-14: Temporary Account Lockout — automatically lock accounts for 15 minutes after 5 consecutive failed logins — Phase 11
 
 ### Active
 
-- [ ] PROD-05: HTTPS & Deployment Guide — Nginx reverse proxy + SSL/TLS (Let's Encrypt) production config
+*(None — planning next milestone)*
 
 ### Out of Scope
 
@@ -76,18 +85,12 @@ The application is built to run locally or as an internal web tool using a React
 | Role-based RBAC Dashboard | Restricting audit metrics to admin/auditor roles enforces least-privilege security policy | — Approved & Implemented (v3.0) |
 | Database connection wait and retry | Implemented a 5-retry loop with 2s delay to wait for PostgreSQL to boot in containerized environments | — Approved & Implemented (Phase 13) |
 | Switchable test database engine | Centralized session fixtures in `conftest.py` supporting `TEST_DATABASE_URL` for CI pipelines | — Approved & Implemented (Phase 13) |
+| Port hardening | Bind proxy port to localhost (127.0.0.1:80:80) to restrict host-level exposure and block direct frontend/backend external ingress | — Approved & Implemented (Phase 14) |
+| Zero DB Port Exposure Backups | Perform pg_dump inside the docker container using docker exec redirection | — Approved & Implemented (Phase 14) |
 
-## Current Milestone: v5.0 (Production Readiness)
+## Current Milestone: Planning
 
-**Goal:** Harden SecureData Web untuk digunakan bersama secara aman dalam lingkungan multi-user dengan user management, security policy, dan deployment guide yang lengkap.
-
-**Target features:**
-- User Management UI (admin promote/demote role, deactivate user)
-- Password Policy (min 8 char, uppercase+angka, strength indicator di UI)
-- PostgreSQL Migration (ganti SQLite untuk concurrent writes)
-- Invite-only Registration (admin-generated invite link/code)
-- HTTPS & Deployment Guide (Nginx reverse proxy + Let's Encrypt)
-- Audit Trail Enhancement (login history, failed login, activity log)
+**Goal:** Plan next milestone goals and requirements.
 
 ## Evolution
 
@@ -107,4 +110,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-20 after Phase 13 complete*
+*Last updated: 2026-07-20 after v5.0 milestone complete*

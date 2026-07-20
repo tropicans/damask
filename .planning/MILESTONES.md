@@ -1,5 +1,18 @@
 # Milestones
 
+## v5.0 production readiness (Shipped: 2026-07-20)
+
+**Phases completed:** 4 phases (Phases 11-14), 10 plans, 34 tasks
+
+**Key accomplishments:**
+
+- **Invite-only Registration & Auth Policy (PROD-AUTH)**: Implemented invite-only registration where registration requires a valid admin-generated invite token. Added a real-time password strength indicator in the UI and enforced password complexity rules on both backend and frontend. Added temporary account lockout (15 minutes) after 5 consecutive failed login attempts from the same IP.
+- **User Management & Audit Trail (PROD-ADMIN)**: Created a User Management UI dashboard for administrators to view all users, demote/promote roles, and deactivate/activate accounts. Enhanced the audit trail to log all successful and failed logins, and integrated login history and failed attempts sub-tabs into the Audit Dashboard.
+- **PostgreSQL Migration Support (PROD-DB)**: Migrated the database setup to support PostgreSQL for production while keeping SQLite for local development. Integrated connection health checks and automated database initialization retry loops to wait for database availability.
+- **Production Reverse Proxy & Deployment (PROD-DEPLOY)**: Configured containerized Nginx reverse proxy routing `/api` to the backend and `/` to the frontend, applying port hardening bound to localhost. Authored a bilingual production deployment guide `docs/DEPLOYMENT-PROD.md` covering SSL setup, Certbot renewal, backups, and firewall configurations.
+
+---
+
 ## v4.0 v4.0 (Shipped: 2026-07-19)
 
 **Phases completed:** 2 phases, 6 plans, 0 tasks
