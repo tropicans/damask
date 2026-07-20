@@ -1,62 +1,75 @@
 # External Integrations
 
-**Analysis Date:** 2026-07-19
+**Analysis Date:** 2026-07-20
 
 ## APIs & External Services
 
-**Data Generating / Synthesis (Planned):**
-- Faker (Python Library) - Used for generating random localized names, emails, and phone numbers for masking.
-- Pandas / Openpyxl (Python Libraries) - Used to parse and output Excel and CSV file streams.
+**Mock Data Generation:**
+- Faker (Local Library) - In-process generation of localized mock names, emails, and phone numbers.
+  - SDK/Client: `faker` python package
+  - Auth: None (local generation)
+  - Endpoints: Native calls to `fake.name()`, `fake.ascii_free_email()`, `fake.phone_number()`, etc.
 
 ## Data Storage
 
 **Databases:**
-- SQLite (Development) / PostgreSQL (Production)
-  - Connection: via `DATABASE_URL` env var
-  - Client: SQLAlchemy / SQLModel ORM
-  - Migrations: Alembic in backend/migrations/
+- SQLite (Local Dev) - Lightweight local database for session and job metadata.
+  - Connection: Connection string via `DATABASE_URL` env var (e.g. `sqlite:///./securedata.db`)
+  - Client: SQLModel / SQLAlchemy ORM
+  - Migrations: Managed via SQLModel schema creation on application startup
+- PostgreSQL (Production) - Enterprise database.
+  - Connection: `DATABASE_URL` env var (e.g. `postgresql://user:pass@host:port/db`)
+  - Client: SQLModel / SQLAlchemy ORM
+  - Migrations: Production migration steps documented in deployment guide
 
 **File Storage:**
-- InMemoryBuffer (RAM) - All uploaded CSV/XLSX files are processed in-memory.
-- Buckets / Persistent Storage: None. (Design choice: Files are processed instantly and returned via stream to prevent sensitive data storage).
+- RAM Buffer Storage - Strictly in-memory file buffers (`io.BytesIO`).
+  - SDK/Client: Python standard library `io`
+  - Policy: No files written to disk; output stream is sent directly to browser and immediately freed from RAM.
+
+**Caching:**
+- Local memory dictionary - Consistently scrambles/anonymizes IDs by caching generated mock values during a single masking session.
+  - Client: Custom cache in `app/services/masker.py`
 
 ## Authentication & Identity
 
 **Auth Provider:**
-- Custom JWT (JSON Web Tokens) Implementation
-  - Token storage: secure HttpOnly Cookies (recommended) or localStorage
-  - Encryption: HS256 algorithm with passlib/bcrypt for password hashing
+- Custom JWT Authentication - Stateless JSON Web Token authentication.
+  - Implementation: FastAPI dependency injection with token verification in `app/services/auth.py`
+  - Token storage: Cookie-based auth (httpOnly cookies) or LocalStorage (header-based)
+  - Session management: Configured JWT expiration
 
 ## Monitoring & Observability
 
 **Logs:**
-- Standard stdout/stderr logging formatted for container runtimes (e.g. JSON logging)
-- Audit log entries: Saved to the SQLite/PostgreSQL database to record masking job metadata (filename, row count, processed columns).
+- Python standard `logging` configured in `app/core/logging.py`.
+  - Output: stdout/stderr (standard container output logging)
+  - Log levels: `INFO` for job metadata, `ERROR` for parsing errors
 
 ## CI/CD & Deployment
 
 **Hosting:**
-- Docker Compose for local development (FastAPI backend + React frontend)
-- Production hosting (Planned):
-  - Frontend SPA: Vercel or static hosting
-  - Backend: Dockerized on AWS ECS, Railway, or similar container hosting platform
-
-**CI Pipeline:**
-- GitHub Actions - Automated testing (pytest, vitest) and Docker builds
+- Docker - Dockerfiles exist for both frontend and backend to enable deployment via container hosting.
+- Docker Compose - `docker-compose.yml` for coordinating frontend and backend containers locally.
 
 ## Environment Configuration
 
 **Development:**
 - Required env vars:
-  - `DATABASE_URL`: Connection string for SQLite/PostgreSQL
-  - `JWT_SECRET_KEY`: Private key for signing tokens
-  - `BACKEND_URL`: URL of the FastAPI backend for frontend requests
+  - `DATABASE_URL`: Connection string for SQLModel database
+  - `JWT_SECRET_KEY`: Secret key used to sign JWT tokens
+  - `CORS_ALLOWED_ORIGINS`: Comma-separated list of allowed frontend origins (e.g., `http://localhost:5173`)
 - Secrets location: `.env` file (gitignored)
+- Mock/stub services: In-memory/local SQLite database
 
 **Production:**
-- Secrets management: Environment variables injected via container management platform (e.g., ECS task definition, Railway dashboard)
+- Secrets management: Configured through hosting platform environment variables (e.g. Render, Railway, AWS ECS).
+
+## Webhooks & Callbacks
+
+- None.
 
 ---
 
-*Integration audit: 2026-07-19*
+*Integration audit: 2026-07-20*
 *Update when adding/removing external services*

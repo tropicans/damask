@@ -1,109 +1,124 @@
 # Architecture
 
-**Analysis Date:** 2026-07-19
+**Analysis Date:** 2026-07-20
 
 ## Pattern Overview
 
-**Overall:** Client-Server Single Page Application (React SPA frontend + FastAPI REST API backend)
+**Overall:** Decoupled Single Page Application (SPA) and Stateless REST API.
 
 **Key Characteristics:**
-- Separation of Concerns: Decoupled frontend (Vite/React/TS) and backend (FastAPI/Python).
-- Stateless API: Session management via JWT; no long-lived state stored on server except audit logs.
-- Memory Buffer Processing: CSV/XLSX file uploads are processed entirely in memory (via Pandas and openpyxl) and streamed directly back to the user without persistent disk writes.
+- **Decoupled separation of concerns:** React + Vite SPA on the frontend, FastAPI on the backend.
+- **In-memory transient file processing:** Uploaded files are processed strictly in RAM buffers and never written to disk, preventing data leaks.
+- **Stateless request handling:** Authenticated endpoints verify JWT signatures per request.
+- **Strategy Pattern for masking rules:** Extensible architecture where each masking rule implements a specific mutation strategy on Pandas DataFrames.
 
 ## Layers
 
-**Frontend Presentation Layer (UI):**
-- Purpose: Render user interface, handle file uploads, configure column masking options, and trigger downloads.
-- Contains: React components, state, hooks, views, page layouts.
-- Location: `frontend/src/`
-- Depends on: Frontend API Client
-- Used by: End user browser
+### Frontend View Layer
+- Purpose: Render user interface, forms, preview tables, dashboards, and handle file uploads.
+- Contains: React components (`frontend/src/App.tsx`, `frontend/src/components/*`).
+- Depends on: Frontend API Client Layer.
+- Used by: End user browser.
 
-**Frontend API Client:**
-- Purpose: Abstract network requests to backend services.
-- Contains: Axios client configurations and API functions.
-- Location: `frontend/src/api/`
-- Depends on: None
-- Used by: Frontend React components
+### Frontend API Client Layer
+- Purpose: Abstract HTTP communication with the backend.
+- Contains: Axios client configurations and endpoint request functions (`frontend/src/api/*`).
+- Depends on: Axios.
+- Used by: Frontend View Layer.
 
-**Backend API Layer (HTTP routes):**
-- Purpose: Handle incoming HTTP requests, validate input schemas, authenticate users, and route tasks to application services.
-- Contains: FastAPI APIRouter, endpoint functions, CORS settings.
-- Location: `backend/app/api/`
-- Depends on: Backend Service Layer, Models
-- Used by: Frontend API client
+### Backend API Router Layer
+- Purpose: Handle incoming HTTP requests, validate input schemas, authenticate requests, and route tasks to application services.
+- Contains: FastAPI APIRouters, endpoint functions, CORS settings (`backend/app/api/*`).
+- Depends on: Backend Service Layer, Models & Data Access Layer.
+- Used by: Frontend API client.
 
-**Backend Service Layer (Business Logic):**
-- Purpose: Core logic for Excel/CSV parsing, regex-based column auto-detection, Faker masking, and exporting processed file streams.
-- Contains: DataMasker service, AutoDetection service, User Auth service.
-- Location: `backend/app/services/`
-- Depends on: Database Access Layer, third-party libraries (pandas, faker)
-- Used by: Backend API routes
+### Backend Service Layer
+- Purpose: Execute core business logic including file parsing, masking strategy application, column type detection, and authentication.
+- Contains: Masking services, auto-detection service, parser utilities, user auth services (`backend/app/services/*`).
+- Depends on: Models & Data Access Layer, third-party libraries (Pandas, Faker).
+- Used by: Backend API Router Layer.
 
-**Database Access Layer (Data Persistence):**
-- Purpose: Manage SQLite/PostgreSQL connection pools and execute SQL operations via SQLModel.
-- Contains: DB engine setup, session helpers, database models.
-- Location: `backend/app/db/`
-- Depends on: Models (SQLModel definitions)
-- Used by: Backend Service layer
+### Models & Data Access Layer
+- Purpose: Manage database connections, execute SQL queries, and define schemas.
+- Contains: DB engine setup, SQLModel class definitions (`backend/app/db.py`, `backend/app/models/*`).
+- Depends on: SQLModel / SQLAlchemy.
+- Used by: Backend Service Layer, Backend API Router Layer.
 
 ## Data Flow
 
-**File Masking Request Workflow:**
+### 1. File Upload & Column Auto-Detection
+1. User selects a CSV or Excel file in the React frontend.
+2. Frontend calls `POST /api/preview/preview` with the file via Axios.
+3. FastAPI endpoint `backend/app/api/endpoints/preview.py` receives the file stream.
+4. `parser.py` parses the file into a Pandas DataFrame in RAM using `io.BytesIO`.
+5. `detector.py` runs regex-based rules to auto-detect columns containing names, emails, and phone numbers.
+6. The API returns the first 3 rows as preview data alongside recommended masking strategies for each column.
+7. Frontend renders the preview table with pre-selected recommendations in dropdown selectors.
 
-1. User uploads a `.csv` or `.xlsx` file via the React drag-and-drop dashboard.
-2. React parses the first few lines using a lightweight client library or uploads it to a `/preview` backend endpoint.
-3. The backend preview endpoint loads the file into a Pandas DataFrame, extracts the first 3 rows as samples, runs regex checks to recommend masking rules, and returns the metadata and preview.
-4. User selects masking rules for each column in the UI dropdown and clicks "Start Masking".
-5. React sends the file along with the JSON config of masking rules to backend `/mask` endpoint.
-6. The backend `/mask` endpoint streams the file into a memory buffer, maps the columns using the DataMasker service (which applies Faker and perturbation functions), writes the output into a new memory stream, logs the job metadata to the DB, and streams the file back to the browser.
-7. User's browser triggers an automatic download of the masked file.
+### 2. Custom Masking & File Download
+1. User configures/confirms the masking rules per column and clicks "Mask Data".
+2. Frontend uploads the file and the rules mapping to `POST /api/mask/mask`.
+3. FastAPI endpoint `backend/app/api/endpoints/mask.py` validates the request and token.
+4. `masker.py` runs the `DataMasker` service, applying selected masking strategies column-by-column to the DataFrame.
+5. The processed DataFrame is written into an output `io.BytesIO` buffer.
+6. An audit log metadata record (row count, file size, columns masked) is saved to the database.
+7. The output buffer is streamed back to the user via a FastAPI `StreamingResponse` (causing a file download in the browser).
+8. Garbage collection immediately clears the memory buffers.
 
-**State Management:**
-- Frontend: Local React state (useState, useContext) for UI preferences, uploading files, and preview configurations.
-- Backend: Stateless. Audit log records and user accounts are persisted to SQLite/PostgreSQL, but files are processed transiently in RAM.
+### State Management
+- **Frontend State:** Managed via local React state (`useState`, `useContext`) to track current user session, uploaded files, and preview configurations.
+- **Backend State:** The API is stateless; persistent metadata (users, masking jobs, job details) is stored in SQLite (dev) or PostgreSQL (prod).
 
 ## Key Abstractions
 
-**MaskingRule:**
-- Purpose: Abstract class or protocol representing a specific masking technique (e.g. Fake Name, Perturb Numeric).
-- Pattern: Strategy Pattern (each masking type has its own strategy handler).
+### Masking Strategy
+- Purpose: Abstract class or function mapping a string value to a masked/synthetic value.
+- Examples: Indonesian-localized `fake_name`, `fake_email`, `fake_phone`, `scramble_id` (consistent masking using local memory cache), `perturb_numeric` ($\pm 20\%$ variance).
+- Pattern: Strategy Pattern.
 
-**DataMasker:**
-- Purpose: Orchestrate pandas DataFrame transformations using selected MaskingRules.
+### DataMasker
+- Purpose: Coordinate the pandas DataFrame transformations using selected MaskingRules.
+- Examples: `mask_dataframe` in `app/services/masker.py`.
 - Pattern: Service Wrapper.
 
 ## Entry Points
 
-**Frontend SPA:**
+### Frontend App
 - Location: `frontend/src/main.tsx`
-- Triggers: Browser landing page load
-- Responsibilities: Mount the React application and initialize routers.
+- Triggers: Browser loading the application.
+- Responsibilities: Mount the React application, initialize global CSS, and set up routing/context providers.
 
-**Backend Server:**
+### Backend App
 - Location: `backend/app/main.py`
-- Triggers: Uvicorn/Gunicorn startup
-- Responsibilities: Initialize FastAPI application, mount middleware (CORS, Error Handlers), and include routers.
+- Triggers: Uvicorn/Gunicorn startup.
+- Responsibilities: Initialize FastAPI, set up CORS middleware, configure security headers, register rate limiters, mount routers, and initialize DB on startup.
 
 ## Error Handling
 
-**Strategy:** FastAPI exception handlers parse validation errors and return structured HTTP JSON responses. The frontend displays Toast notifications or alerts to the user based on error codes.
+**Strategy:**
+Services raise custom exceptions (e.g., `DataProcessingException`) or standard Python errors. The API Router catches exceptions and returns appropriate `HTTPException` responses with clear user-facing error messages.
 
 **Patterns:**
-- Try/catch blocks in backend endpoints catching Custom Exception classes (e.g., `FileProcessingError`, `AuthenticationError`).
-- React error boundaries to prevent app crashes on UI render errors.
+- Try/catch blocks in backend endpoints catching processing and database exceptions.
+- Structured JSON error responses (`{"detail": "Error message description"}`) returned to the client.
+- Frontend Axios interceptors or local try/catch blocks catching API errors and displaying elegant UI toast notices.
 
 ## Cross-Cutting Concerns
 
 **Logging:**
-- Python standard `logging` configured in backend to write structured logs to stdout.
+- Standard Python `logging` configured in `backend/app/core/logging.py`.
+- Logs masking job executions (metadata only) at `INFO` level.
+- Logs errors with stack traces at `ERROR` level.
 
 **Validation:**
-- Pydantic models in backend for endpoint request/response validation.
-- Yup / Zod on frontend for form schemas (e.g., login, registration).
+- Pydantic models in the backend for input payload validation (registration, login schemas).
+- Pandas and openpyxl check file integrity on load.
+
+**Authentication:**
+- JWT Bearer tokens passed via headers or secure HTTP-only cookies.
+- CSRF protection mechanisms configured on state-changing requests.
 
 ---
 
-*Architecture analysis: 2026-07-19*
+*Architecture analysis: 2026-07-20*
 *Update when major patterns change*

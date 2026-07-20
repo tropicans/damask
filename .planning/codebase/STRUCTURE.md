@@ -1,101 +1,116 @@
 # Codebase Structure
 
-**Analysis Date:** 2026-07-19
+**Analysis Date:** 2026-07-20
 
 ## Directory Layout
 
 ```
-datamask/
-├── backend/                  # FastAPI backend server
-│   ├── app/                  # Application source code
-│   │   ├── api/              # API endpoints and routers
-│   │   ├── core/             # Configuration, security, JWT helpers
-│   │   ├── db/               # Database connection and session management
-│   │   ├── models/           # SQLModel/Pydantic schemas and database models
-│   │   └── services/         # Masking engine, Pandas helpers, Faker logic
-│   ├── tests/                # Backend unit and integration tests
-│   ├── Dockerfile            # Container build for backend
-│   ├── pyproject.toml        # Poetry/Pip dependencies definition
-│   └── requirements.txt      # Python dependencies list
-├── frontend/                 # Vite/React frontend application
-│   ├── src/                  # React source files
-│   │   ├── api/              # API client functions (axios/fetch wrappers)
-│   │   ├── components/       # Reusable UI components (drag-and-drop, dropdowns)
-│   │   ├── context/          # React Context (authentication state, app state)
-│   │   ├── layouts/          # Page layouts (Navbar, AppWrapper)
-│   │   ├── pages/            # View pages (Login, Dashboard, AuditLogs)
-│   │   └── main.tsx          # React application entry point
-│   ├── Dockerfile            # Container build for frontend
-│   ├── package.json          # Node package manifest
-│   ├── vite.config.ts        # Vite configuration file
-│   └── tsconfig.json         # TypeScript compiler configurations
-├── docker-compose.yml        # Orchestrates backend, frontend, and database
-├── prd.md                    # Product Requirements Document
-├── erd.md                    # Entity Relationship Diagram
-└── .planning/                # GSD planning and state tracking directory
-    └── codebase/             # Automated codebase analysis documents
+damask/
+├── .agents/            # GSD agent scripts, workflows, and templates
+├── .planning/          # Project planning docs (roadmaps, states, phases, codebase)
+├── backend/            # FastAPI Python backend application
+│   ├── app/            # Main application source code
+│   │   ├── api/        # API routers and endpoints
+│   │   ├── core/       # Logging, security limiters, config
+│   │   ├── models/     # SQLModel tables (user, job)
+│   │   ├── services/   # DataMasker, auth, detector, parser services
+│   │   └── tests/      # Pytest test cases
+│   ├── pyproject.toml  # Poetry dependencies file
+│   └── uv.lock         # uv lockfile
+├── docs/               # Architecture, API specifications, and deployment guides
+└── frontend/           # Vite + React + TS frontend application
+    ├── public/         # Public static assets
+    ├── src/            # React source code
+    │   ├── api/        # Axios API clients
+    │   ├── assets/     # Images/icons
+    │   ├── components/ # Reusable UI components
+    │   ├── App.tsx     # Main application layout and routing
+    │   └── main.tsx    # React entry mount point
+    ├── package.json    # Frontend dependency declaration
+    └── vite.config.ts  # Vite bundler config
 ```
 
 ## Directory Purposes
 
-**backend/app/api/**
-- Purpose: HTTP endpoint routing and request payload validation.
-- Contains: `auth.py` (login/register endpoints), `jobs.py` (file uploads, preview, and execution endpoints).
-- Key files: `routes.py` - main APIRouter aggregator.
+**.agents/**
+- Purpose: System-level GSD configurations and scripts
+- Contains: Workflow templates, custom tool integration hooks, and configurations
+- Key files: `mcp_config.json`, `settings.json`
 
-**backend/app/services/**
-- Purpose: Implementation of core business logic.
-- Contains: `masker.py` (Pandas + Faker data masking engine), `detector.py` (auto-detect rules based on column name regex).
+**.planning/**
+- Purpose: Project roadmap, milestone specifications, and active phase plan tracking
+- Contains: Roadmap, Project state, phase plan markdown files, and codebase documentation
+- Subdirectories: `codebase/`, `milestones/`, `phases/`
 
-**frontend/src/components/**
-- Purpose: UI components reused across pages.
-- Contains: `DragDropUpload.tsx` (handles file drag and drop), `MaskingConfigTable.tsx` (renders column config selectors), `PreviewTable.tsx` (renders first 3 rows preview).
+**backend/app/**
+- Purpose: FastAPI backend service codebase
+- Contains: API route definitions, database ORM models, business logic services, and testing suites
+- Subdirectories: `api/`, `core/`, `models/`, `services/`, `tests/`
 
-**frontend/src/pages/**
-- Purpose: Major router page locations.
-- Contains: `LoginPage.tsx` (Auth interface), `DashboardPage.tsx` (File uploading and configuration), `AuditPage.tsx` (Job history list).
+**frontend/src/**
+- Purpose: Frontend single page application codebase
+- Contains: React components, axios clients, local stylesheets, and layout controllers
+- Key files: `App.tsx` (main router/view controller), `main.tsx` (virtual DOM mounting)
+- Subdirectories: `api/`, `assets/`, `components/`
 
 ## Key File Locations
 
 **Entry Points:**
-- `backend/app/main.py` - Backend FastAPI server bootstrap.
-- `frontend/src/main.tsx` - Frontend React/Vite client entry point.
+- `backend/app/main.py` - FastAPI app initialization, middleware loading, and routes mounting
+- `frontend/src/main.tsx` - Vite frontend client mounting
 
 **Configuration:**
-- `backend/app/core/config.py` - Python settings management using Pydantic Settings.
-- `frontend/vite.config.ts` - Vite bundler and proxy configurations.
-- `docker-compose.yml` - Multi-container orchestration parameters.
+- `backend/app/core/config.py` - Configuration class and env var settings using `pydantic-settings`
+- `frontend/vite.config.ts` - Vite compilation and bundler configuration
+- `backend/pyproject.toml` - Backend Poetry package manifest
+- `frontend/package.json` - Frontend npm package manifest
+
+**Core Logic:**
+- `backend/app/services/masker.py` - Core df masking executor using Strategy Pattern
+- `backend/app/services/detector.py` - Regex-based name, email, and phone column auto-detectors
+- `backend/app/db.py` - SQLModel database engine and session setup
 
 **Testing:**
-- `backend/tests/` - Backend test suite.
-- `frontend/src/__tests__/` - Component and helper unit tests.
+- `backend/app/tests/` - Backend pytest suite directory
+- `backend/app/tests/conftest.py` - Pytest fixtures and mock database overrides
+
+**Documentation:**
+- `docs/ARCHITECTURE.md` - High-level architectural specification
+- `docs/API-SPEC.md` - HTTP endpoint parameters and JSON schemas
+- `docs/DEPLOYMENT.md` - Production configuration and setup guidelines
 
 ## Naming Conventions
 
 **Files:**
-- snake_case.py: Python backend source files (e.g. `data_masker.py`).
-- kebab-case.ts: TypeScript frontend utility modules (e.g. `api-client.ts`).
-- PascalCase.tsx: React functional components and pages (e.g. `DragDropUpload.tsx`).
+- `snake_case.py` for Python modules, variables, and utility helper files (`auth_service.py`)
+- `PascalCase.tsx` / `PascalCase.ts` for React components and class structures (`LoginPage.tsx`)
+- `camelCase.ts` for frontend hooks, utilities, and helper scripts (`useAuth.ts`)
+- `test_*.py` for backend pytest files (`test_auth.py`)
+- `kebab-case.*` for configuration and setup files (`tailwind.config.js`)
 
 **Directories:**
-- snake_case: Backend folders.
-- kebab-case: Frontend folders.
+- `snake_case` for backend directories (`api`, `core`, `models`, `services`)
+- `camelCase` or `kebab-case` for frontend directories (`components`, `api`)
 
 ## Where to Add New Code
 
+**New Feature:**
+- Implement backend services under `backend/app/services/`.
+- Wire frontend components under `frontend/src/components/` and connect them to API clients.
+
+**New API Route:**
+- Define endpoint endpoints under `backend/app/api/endpoints/`.
+- Mount the router path in `backend/app/api/api.py`.
+- Define backend schemas or models if database persistence is needed in `backend/app/models/`.
+
 **New Masking Strategy:**
-- Implementation: Add to `backend/app/services/strategies.py` or create a new file in that directory.
-- Test: Add test case in `backend/tests/test_strategies.py`.
+- Define df masking mutation helper function under `backend/app/services/masker.py`.
+- Map the strategic rule name to the strategy function in the `mask_dataframe` selector block.
 
-**New UI Component:**
-- Implementation: Add to `frontend/src/components/` in PascalCase.
-- Test: Alongside the component or in `frontend/src/__tests__/components/`.
-
-**New Database Audit Log Column:**
-- Model definition: Update `backend/app/models/job.py`.
-- Migration: Run alembic revision command inside backend container.
+**Utilities:**
+- Put general purpose functions in `backend/app/core/` (backend) or `frontend/src/api/` (frontend helper hooks).
 
 ---
 
-*Structure analysis: 2026-07-19*
+*Structure analysis: 2026-07-20*
 *Update when directory structure changes*
