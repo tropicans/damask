@@ -6,9 +6,9 @@
 <domain>
 ## Phase Boundary
 
-Phase 14 delivers a secure production deployment model and documentation:
-1. **Production Deployment Guide:** A detailed guide (`docs/DEPLOYMENT-PROD.md`) covering VPS setup, Docker install, Nginx reverse proxy configuration, SSL/TLS setup with Let's Encrypt (Certbot), SSL auto-renewal, and an environment variable checklist.
-2. **Template Nginx Configuration:** A ready-to-use Nginx configuration template (`nginx/nginx.conf`) forwarding HTTPS traffic to the frontend and backend Docker containers.
+Phase 14 delivers a secure production deployment model and documentation optimized for containerization and Cloudflare Tunnel ingress:
+1. **Production Deployment Guide:** A detailed guide (`docs/DEPLOYMENT-PROD.md`) covering VPS setup, Docker Compose deployment, port hardening, firewall configuration, and integration with an existing Cloudflare Tunnel.
+2. **Template Nginx Configuration:** A ready-to-use Nginx configuration template (`nginx/nginx.conf`) running inside Docker as a local reverse proxy to forward traffic to backend and frontend containers.
 
 </domain>
 
@@ -16,22 +16,21 @@ Phase 14 delivers a secure production deployment model and documentation:
 ## Implementation Decisions
 
 ### Nginx Deployment Topology
-- **D-01:** Install and run Nginx directly on the host VPS (not inside a Docker container) to simplify Let's Encrypt/Certbot setup and certificate path management.
-- **D-02:** Nginx on the host VPS will proxy all frontend request traffic to the frontend Docker container.
-- **D-03:** Nginx on the host will cache frontend static assets (JS, CSS, images) with long expiration, but configure `index.html` to check for updates (`Cache-Control: no-cache`).
+- **D-01:** Run Nginx inside a Docker container (as a service in `docker-compose.prod.yml`) to serve as the single entrypoint for the Docker network.
+- **D-02:** Nginx will route `/api` to the `backend` service and all other traffic to the `frontend` service using Docker internal service names.
+- **D-03:** Nginx will cache frontend static assets (JS, CSS, images) with long expiration, but configure `index.html` to check for updates (`Cache-Control: no-cache`).
 
-### Port Hardening
-- **D-04:** Bind the frontend and backend ports in `docker-compose.prod.yml` to localhost (`127.0.0.1:8000:8000` and `127.0.0.1:5173:5173`) to ensure all external traffic goes through Nginx HTTPS and cannot bypass the reverse proxy.
-- **D-05:** Document host-level firewall rules in `docs/DEPLOYMENT-PROD.md` (e.g., using UFW) to allow only SSH on port 22, HTTP on port 80, and HTTPS on port 443.
+### Port Hardening & Ingress
+- **D-04:** Only the `nginx` service port (e.g., `80` or `8080`) will be exposed to the host, and it must be bound to localhost (`127.0.0.1:80:80`). The `frontend` and `backend` container ports will NOT be exposed to the host directly.
+- **D-05:** Document host-level firewall rules in `docs/DEPLOYMENT-PROD.md` (e.g., using UFW) to allow only SSH on port 22. Inbound HTTP (80) and HTTPS (443) are NOT exposed on the host since the existing Cloudflare Tunnel connects outbound.
 - **D-06:** Document database backups using `pg_dump` executed inside the PostgreSQL Docker container, avoiding exposing port 5432 to the host or internet.
 
-### Certbot SSL Auto-Renewal
-- **D-07:** Install Certbot on the host VPS and manage auto-renewal via a systemd timer / cron job to easily reload the host Nginx service.
-- **D-08:** Configure Nginx to serve the Let's Encrypt ACME challenge from a webroot directory on the host VPS for zero-downtime renewal.
-- **D-09:** Document the generation of a custom 2048-bit Diffie-Hellman parameters file (`dhparam.pem`) and include it in the Nginx template to achieve an A+ SSL rating.
+### SSL & Cloudflare Tunnel
+- **D-07:** Do NOT configure Let's Encrypt / Certbot or local SSL certificates on Nginx. SSL/TLS is terminated at the Cloudflare edge, and secure local ingress is handled by the user's existing Cloudflare Tunnel agent.
+- **D-08:** Document how to point the user's existing Cloudflare Tunnel configuration to the local Nginx gateway (`http://localhost:80` or `http://localhost:8080`).
 
 ### the agent's Discretion
-- Exact choice of strong cipher suites and TLS versions (default to modern TLS 1.2 and 1.3).
+- Exact choice of host port for Nginx (default to port 80).
 - Detailed formatting and layout of `docs/DEPLOYMENT-PROD.md`.
 - Cron syntax templates for PostgreSQL backups.
 
@@ -40,8 +39,8 @@ Phase 14 delivers a secure production deployment model and documentation:
 <specifics>
 ## Specific Ideas
 
-- Nginx routes `/api` to the backend Docker container (`http://127.0.0.1:8000`) and all other routes to the frontend container (`http://127.0.0.1:5173`).
-- Diffie-Hellman parameter generation: `openssl dhparam -out /etc/nginx/dhparam.pem 2048`.
+- Nginx container acts as a local HTTP reverse proxy routing `/api` to `http://backend:8000` and `/` to `http://frontend:5173`.
+- The existing Cloudflare Tunnel daemon points to the exposed port of the Nginx container on localhost.
 
 </specifics>
 
@@ -65,14 +64,14 @@ Phase 14 delivers a secure production deployment model and documentation:
 ## Existing Code Insights
 
 ### Reusable Assets
-- `docker-compose.prod.yml` ports mapping can be updated to add `127.0.0.1:` prefix.
+- `docker-compose.prod.yml` ports mapping can be cleaned up to only expose `nginx` service to the host.
 - `backend/app/main.py` uses `/api` prefix for all routers.
 
 ### Established Patterns
-- **Container network:** Frontend container depends on backend container, and both run in a shared Docker bridge network.
+- **Container network:** Services communicate internally using Docker dns names (`db`, `backend`, `frontend`).
 
 ### Integration Points
-- `docker-compose.prod.yml`: Restrict exposed port bindings to localhost.
+- `docker-compose.prod.yml`: Add `nginx` service and remove direct port mappings for `backend` and `frontend` on the host.
 - `docs/DEPLOYMENT-PROD.md` [NEW]: Location of the production deployment guide.
 - `nginx/nginx.conf` [NEW]: Location of the template Nginx configuration.
 

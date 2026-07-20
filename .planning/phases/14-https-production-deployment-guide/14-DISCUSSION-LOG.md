@@ -5,7 +5,7 @@
 
 **Date:** 2026-07-20
 **Phase:** 14-HTTPS & Production Deployment Guide
-**Areas discussed:** Nginx Deployment Topology, Port Hardening, Certbot SSL Auto-Renewal
+**Areas discussed:** Nginx Deployment Topology, Port Hardening, Cloudflare Tunnel Integration
 
 ---
 
@@ -14,8 +14,8 @@
 ### Reverse Proxy Host Choice
 | Option | Description | Selected |
 |--------|-------------|----------|
-| Host VPS | Run Nginx directly on the host VPS (simplifies SSL/Certbot) | ✓ |
-| Containerized Nginx | Run Nginx inside a Docker container | |
+| Host VPS | Run Nginx directly on the host VPS (simplifies SSL/Certbot) | |
+| Containerized Nginx | Run Nginx inside a Docker container | ✓ |
 | You decide | Let the agent choose based on standard practices | |
 
 ### Serving Frontend Assets
@@ -39,14 +39,14 @@
 ### Production Port Bindings
 | Option | Description | Selected |
 |--------|-------------|----------|
-| Bind to localhost | Bind ports to 127.0.0.1 (prevents bypassing HTTPS) | ✓ |
-| Expose on all interfaces | Bind to 0.0.0.0 | |
+| Bind to localhost | Bind Nginx port to 127.0.0.1 (prevents bypassing HTTPS) | ✓ |
+| Expose on all interfaces | Bind Nginx to 0.0.0.0 | |
 | You decide | Let the agent choose based on standard practices | |
 
 ### Firewall Instructions
 | Option | Description | Selected |
 |--------|-------------|----------|
-| Document firewall rules | Document setting up UFW for SSH (22), HTTP (80), and HTTPS (443) | ✓ |
+| Document firewall rules | Document setting up UFW for SSH (22) only, keeping standard web ports closed | ✓ |
 | No firewall rules | Keep the guide focused solely on Docker/Nginx | |
 | You decide | Let the agent choose based on standard practices | |
 
@@ -60,35 +60,21 @@
 
 ---
 
-## Certbot SSL Auto-Renewal
+## Cloudflare Tunnel Integration
 
-### Certbot Location
+### SSL and Ingress Ingestion
 | Option | Description | Selected |
 |--------|-------------|----------|
-| Host VPS | Install Certbot directly on the host VPS with systemd/cron | ✓ |
-| Docker Container | Run Certbot in a Docker container | |
-| You decide | Let the agent choose based on standard practices | |
-
-### Let's Encrypt Challenge Verification
-| Option | Description | Selected |
-|--------|-------------|----------|
-| Webroot directory | Serve ACME challenge via Nginx webroot directory | ✓ |
-| Standalone server | Stop Nginx and use Certbot standalone server | |
-| You decide | Let the agent choose based on standard practices | |
-
-### Diffie-Hellman Parameter Security
-| Option | Description | Selected |
-|--------|-------------|----------|
-| Custom dhparam.pem | Document generating a 2048-bit dhparam.pem file | ✓ |
-| Default settings | Use Nginx's default Diffie-Hellman settings | |
+| Cloudflare Tunnel | Terminate SSL at Cloudflare Edge and route internally via existing CT daemon | ✓ |
+| Host Certbot / Let's Encrypt | Install Certbot and handle TLS directly on the VPS host | |
 | You decide | Let the agent choose based on standard practices | |
 
 ---
 
 ## the agent's Discretion
-- Specific cipher suites and TLS protocol configurations.
-- Nginx configuration templates formatting.
-- Backup script implementation details.
+- Local Nginx config details for caching headers.
+- Formatting and layout of the deployment guide.
+- Cron backups setup details.
 
 ## Deferred Ideas
 - None — discussion stayed within phase scope.
