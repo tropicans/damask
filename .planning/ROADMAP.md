@@ -64,7 +64,9 @@ Previous milestones archived in `.planning/milestones/`.
   2. `docker-compose.prod.yml` menyertakan PostgreSQL service dengan volume persisten dan health check.
   3. Semua 35+ backend tests passing dengan PostgreSQL sebagai database.
   4. SQLite tetap digunakan untuk development (`.env.example` mendokumentasikan keduanya).
-- **Plans**: 2 plans (Planned)
+- **Plans**: 1/2 plans executed
+- [x] 13-01-PLAN.md
+- [ ] 13-02-PLAN.md
 
 #### Phase 14: HTTPS & Production Deployment Guide
 
