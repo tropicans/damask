@@ -20,8 +20,6 @@ services:
   backend:
     build: ./backend
     restart: unless-stopped
-    ports:
-      - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://securedata_user:${POSTGRES_PASSWORD}@db:5432/securedata
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
@@ -35,12 +33,21 @@ services:
   frontend:
     build: ./frontend
     restart: unless-stopped
-    ports:
-      - "5173:5173"
     environment:
       - VITE_API_URL=${VITE_API_URL}
     depends_on:
       - backend
+
+  nginx:
+    image: nginx:1.25-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
 
 volumes:
   postgres_data:

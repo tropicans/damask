@@ -27,8 +27,8 @@
 
 ### Deployment & HTTPS (PROD)
 
-- [ ] **PROD-10**: Repository menyertakan panduan deployment produksi (`docs/DEPLOYMENT-PROD.md`) mencakup: setup Nginx reverse proxy, konfigurasi SSL/TLS dengan Let's Encrypt (Certbot), dan environment variable checklist.
-- [ ] **PROD-11**: Disertakan template konfigurasi Nginx (`nginx/nginx.conf`) yang siap pakai untuk meneruskan traffic HTTPS ke backend dan frontend containers.
+- [x] **PROD-10**: Repository menyertakan panduan deployment produksi (`docs/DEPLOYMENT-PROD.md`) mencakup: setup Nginx reverse proxy, konfigurasi SSL/TLS dengan Let's Encrypt (Certbot), dan environment variable checklist.
+- [x] **PROD-11**: Disertakan template konfigurasi Nginx (`nginx/nginx.conf`) yang siap pakai untuk meneruskan traffic HTTPS ke backend dan frontend containers.
 
 ### Audit Trail Enhancement (PROD)
 
@@ -70,8 +70,8 @@
 | PROD-07 | Phase 11 | Complete |
 | PROD-08 | Phase 13 | Complete |
 | PROD-09 | Phase 13 | Complete |
-| PROD-10 | Phase 14 | Pending |
-| PROD-11 | Phase 14 | Pending |
+| PROD-10 | Phase 14 | Complete |
+| PROD-11 | Phase 14 | Complete |
 | PROD-12 | Phase 12 | Complete |
 | PROD-13 | Phase 12 | Complete |
 | PROD-14 | Phase 11 | Complete |

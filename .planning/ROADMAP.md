@@ -78,7 +78,9 @@ Previous milestones archived in `.planning/milestones/`.
   2. `nginx/nginx.conf` template tersedia di repository dan siap dikustomisasi.
   3. Environment variable checklist (production secrets, DB URL, CORS origins) terdokumentasi.
   4. Dokumentasi mencakup cara memperpanjang SSL certificate secara otomatis.
-- **Plans**: 2 plans (Planned)
+- **Plans**: 2/2 plans executed
+- [x] 14-01-PLAN.md
+- [x] 14-02-PLAN.md
 
 ---
 
@@ -99,7 +101,7 @@ Previous milestones archived in `.planning/milestones/`.
 | 11. Auth Policy & Invite Reg | v5.0 | 3/3 | Complete | 2026-07-20 |
 | 12. User Management & Audit Trail | v5.0 | 3/3 | Complete | 2026-07-20 |
 | 13. PostgreSQL Migration | v5.0 | 2/2 | Complete | 2026-07-20 |
-| 14. HTTPS & Deployment Guide | v5.0 | 0/2 | Planned | — |
+| 14. HTTPS & Deployment Guide | v5.0 | 2/2 | Complete | 2026-07-20 |
 
 ---
 *Roadmap updated: 2026-07-20*
